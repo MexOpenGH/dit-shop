@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register — Dit Shop</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;600;700&family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container navbar-inner">
+    <a href="index.html" class="navbar-brand">
+      <div class="logo-icon">🌸</div>Dit Shop
+    </a>
+    <div class="navbar-actions">
+      <div class="language-switcher">
+        <button class="language-switcher-btn" id="languageSwitcherBtn" aria-label="Select language" aria-haspopup="true" aria-expanded="false">
+          <div class="language-switcher-btn-content">
+            <div class="language-switcher-btn-text">
+              <span class="language-switcher-btn-flag">🇬🇧</span>
+              <span class="language-switcher-btn-name">English</span>
+              <span class="language-switcher-btn-code">(EN)</span>
+            </div>
+          </div>
+          <span class="language-switcher-btn-arrow">▼</span>
+        </button>
+
+        <div class="language-switcher-menu" id="languageSwitcherMenu">
+          <div class="language-switcher-item selected" data-lang="en">
+            <span class="language-switcher-item-flag">🇬🇧</span>
+            <div class="language-switcher-item-text">
+              <span class="language-switcher-item-name">English</span>
+              <span class="language-switcher-item-code">EN</span>
+            </div>
+          </div>
+          <div class="language-switcher-item" data-lang="th">
+            <span class="language-switcher-item-flag">🇹🇭</span>
+            <div class="language-switcher-item-text">
+              <span class="language-switcher-item-name">ไทย</span>
+              <span class="language-switcher-item-code">TH</span>
+            </div>
+          </div>
+          <div class="language-switcher-item" data-lang="lo">
+            <span class="language-switcher-item-flag">🇱🇦</span>
+            <div class="language-switcher-item-text">
+              <span class="language-switcher-item-name">ລາວ</span>
+              <span class="language-switcher-item-code">LA</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <span style="color:var(--gray-400);font-size:.9rem;" data-i18n="nav_already_account">Already have an account?</span>
+      <a href="login.html" class="btn btn-outline btn-sm" data-i18n="nav_login">Login</a>
+    </div>
+  </div>
+</nav>
+
+<div class="auth-page">
+  <div class="auth-card card fade-in">
+    <div style="text-align:center;margin-bottom:1.75rem;">
+      <div style="font-size:3rem;margin-bottom:.5rem;">🎁</div>
+      <h2 style="font-size:1.6rem;" data-i18n="register_title">Create Account</h2>
+      <p class="text-muted" style="font-size:.9rem;margin-top:.25rem;" data-i18n="register_subtitle">Join Dit Shop and start gifting</p>
+    </div>
+
+    <div id="error-msg" class="form-error" style="display:none;margin-bottom:1rem;text-align:center;font-size:.88rem;background:var(--rose-50);padding:.65rem;border-radius:8px;"></div>
+
+    <form id="register-form" novalidate>
+      <div class="form-group">
+        <label class="form-label" for="full_name" data-i18n="register_fullname">Full Name</label>
+        <input type="text" class="form-control" id="full_name" placeholder="Jane Doe" autocomplete="name" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="username"><span data-i18n="register_username">Username</span> <span style="color:var(--rose-500)">*</span></label>
+        <input type="text" class="form-control" id="username" placeholder="janedoe" required autocomplete="username" />
+        <div class="form-error" id="username-error"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="email"><span data-i18n="register_email">Email Address</span> <span style="color:var(--rose-500)">*</span></label>
+        <input type="email" class="form-control" id="email" placeholder="you@example.com" required autocomplete="email" />
+        <div class="form-error" id="email-error"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password"><span data-i18n="register_password">Password</span> <span style="color:var(--rose-500)">*</span></label>
+        <div style="position:relative;">
+          <input type="password" class="form-control" id="password" placeholder="Min. 6 characters" required autocomplete="new-password" style="padding-right:2.75rem;" />
+          <button type="button" onclick="togglePwd()" style="position:absolute;right:.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;">👁</button>
+        </div>
+        <div class="form-error" id="password-error"></div>
+        <!-- Password strength bar -->
+        <div style="margin-top:.4rem;height:4px;border-radius:4px;background:var(--gray-200);overflow:hidden;">
+          <div id="strength-bar" style="height:100%;width:0;border-radius:4px;transition:width .3s,background .3s;"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="confirm"><span data-i18n="register_confirm">Confirm Password</span> <span style="color:var(--rose-500)">*</span></label>
+        <input type="password" class="form-control" id="confirm" placeholder="Repeat password" required autocomplete="new-password" />
+        <div class="form-error" id="confirm-error"></div>
+      </div>
+      <button type="submit" class="btn btn-primary w-100 btn-lg mt-2" id="submit-btn" data-i18n="register_btn">
+        Create Account 🌸
+      </button>
+    </form>
+
+    <p style="text-align:center;font-size:.82rem;color:var(--gray-400);margin-top:1rem;">
+      <span data-i18n="register_terms">By registering you agree to our</span> <a href="#" style="color:var(--rose-500);" data-i18n="register_terms_link1">Terms</a> <span data-i18n="register_terms_and">&amp;</span> <a href="#" style="color:var(--rose-500);" data-i18n="register_terms_link2">Privacy Policy</a>.
+    </p>
+    <p style="text-align:center;font-size:.88rem;margin-top:.5rem;">
+      <span data-i18n="register_have_account">Already have an account?</span> <a href="login.html" style="color:var(--rose-600);font-weight:600;" data-i18n="register_signin">Sign in</a>
+    </p>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="js/api.js"></script>
+<script>
+  if (isLoggedIn()) window.location.href = 'index.html';
+
+  function togglePwd() {
+    const inp = document.getElementById('password');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  }
+
+  document.getElementById('password').addEventListener('input', function() {
+    const v = this.value;
+    const bar = document.getElementById('strength-bar');
+    let strength = 0;
+    if (v.length >= 6)  strength++;
+    if (v.length >= 10) strength++;
+    if (/[A-Z]/.test(v)) strength++;
+    if (/[0-9]/.test(v)) strength++;
+    if (/[^A-Za-z0-9]/.test(v)) strength++;
+    const pct = (strength / 5) * 100;
+    const colors = ['#f43f5e','#fb923c','#facc15','#4ade80','#22c55e'];
+    bar.style.width = pct + '%';
+    bar.style.background = colors[strength - 1] || 'transparent';
+  });
+
+  document.getElementById('register-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const full_name = document.getElementById('full_name').value.trim();
+    const username  = document.getElementById('username').value.trim();
+    const email     = document.getElementById('email').value.trim();
+    const password  = document.getElementById('password').value;
+    const confirm   = document.getElementById('confirm').value;
+
+    // Clear errors
+    ['username-error','email-error','password-error','confirm-error'].forEach(id =>
+      document.getElementById(id).textContent = '');
+    document.getElementById('error-msg').style.display = 'none';
+
+    let valid = true;
+    if (!username || username.length < 3)   { document.getElementById('username-error').textContent  = 'Username must be at least 3 characters.'; valid = false; }
+    if (!/^\w+$/.test(username))             { document.getElementById('username-error').textContent  = 'Only letters, numbers, underscores.'; valid = false; }
+    if (!email || !email.includes('@'))      { document.getElementById('email-error').textContent    = 'Enter a valid email.'; valid = false; }
+    if (!password || password.length < 6)   { document.getElementById('password-error').textContent = 'Password must be at least 6 characters.'; valid = false; }
+    if (password !== confirm)               { document.getElementById('confirm-error').textContent  = 'Passwords do not match.'; valid = false; }
+    if (!valid) return;
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.textContent = 'Creating account…';
+
+    try {
+      const { token, user } = await api.post('/auth/register', { username, email, password, full_name: full_name || undefined });
+      setSession(token, user);
+      showToast('Account created! Welcome to Dit Shop 🌸', 'success');
+      setTimeout(() => window.location.href = 'index.html', 900);
+    } catch (err) {
+      document.getElementById('error-msg').textContent = err.message || 'Registration failed.';
+      document.getElementById('error-msg').style.display = 'block';
+      btn.disabled = false; btn.innerHTML = 'Create Account 🌸';
+    }
+  });
+</script>
+<script src="js/translations.js"></script>
+<script src="js/language-switcher.js"></script>
+</body>
+</html>

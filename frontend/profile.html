@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile — Dit Shop</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;600;700&family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container navbar-inner">
+    <a href="index.html" class="navbar-brand"><div class="logo-icon">🌸</div>Dit Shop</a>
+    <ul class="navbar-nav">
+      <li><a href="index.html" data-i18n="nav_store">Store</a></li>
+      <li><a href="profile.html" class="active" data-i18n="nav_my_orders">My Orders</a></li>
+      <li>
+        <a href="inbox.html" class="inbox-badge">
+          <span data-i18n="nav_inbox">Inbox</span>
+          <span class="badge" style="display:none"><span class="unread-count">0</span></span>
+        </a>
+      </li>
+      <li class="nav-admin" style="display:none"><a href="admin/index.html" data-i18n="nav_admin">Admin</a></li>
+    </ul>
+    <div class="navbar-actions nav-profile">
+      <div class="language-switcher">
+        <button class="language-switcher-btn" id="languageSwitcherBtn" aria-label="Select language" aria-haspopup="true" aria-expanded="false">
+          <div class="language-switcher-btn-content">
+            <div class="language-switcher-btn-text">
+              <span class="language-switcher-btn-flag">🇬🇧</span>
+              <span class="language-switcher-btn-name">English</span>
+              <span class="language-switcher-btn-code">(EN)</span>
+            </div>
+          </div>
+          <span class="language-switcher-btn-arrow">▼</span>
+        </button>
+
+        <div class="language-switcher-menu" id="languageSwitcherMenu">
+          <div class="language-switcher-item selected" data-lang="en">
+            <span class="language-switcher-item-flag">🇬🇧</span>
+            <div class="language-switcher-item-text">
+              <span class="language-switcher-item-name">English</span>
+              <span class="language-switcher-item-code">EN</span>
+            </div>
+          </div>
+          <div class="language-switcher-item" data-lang="th">
+            <span class="language-switcher-item-flag">🇹🇭</span>
+            <div class="language-switcher-item-text">
+              <span class="language-switcher-item-name">ไทย</span>
+              <span class="language-switcher-item-code">TH</span>
+            </div>
+          </div>
+          <div class="language-switcher-item" data-lang="lo">
+            <span class="language-switcher-item-flag">🇱🇦</span>
+            <div class="language-switcher-item-text">
+              <span class="language-switcher-item-name">ລາວ</span>
+              <span class="language-switcher-item-code">LA</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <a href="profile.html" class="btn btn-ghost btn-sm">👤 <span class="nav-username"></span></a>
+      <button class="btn btn-outline btn-sm" onclick="logout()" data-i18n="nav_logout">Logout</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Profile Header -->
+<div class="profile-header">
+  <div class="container fade-in">
+    <div class="avatar" id="avatar-initials">?</div>
+    <h2 id="profile-name" style="color:#fff;margin-bottom:.25rem;">Loading…</h2>
+    <p id="profile-email" style="color:rgba(255,255,255,.75);font-size:.9rem;"></p>
+    <p id="profile-since" style="color:rgba(255,255,255,.55);font-size:.78rem;margin-top:.25rem;"></p>
+  </div>
+</div>
+
+<div class="container section">
+  <!-- Stats row -->
+  <div class="stats-grid fade-in" style="margin-bottom:2rem;">
+    <div class="stat-card">
+      <div class="stat-label" data-i18n="profile_total_orders">Total Orders</div>
+      <div class="stat-value" id="stat-total">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label" data-i18n="profile_pending">Pending</div>
+      <div class="stat-value" id="stat-pending">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label" data-i18n="profile_delivered">Delivered</div>
+      <div class="stat-value" id="stat-delivered">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label" data-i18n="profile_total_spent">Total Spent</div>
+      <div class="stat-value" id="stat-spent">—</div>
+    </div>
+  </div>
+
+  <!-- Orders table -->
+  <div class="admin-card fade-in-2">
+    <div class="admin-card-header">
+      <h3 data-i18n="profile_my_orders">My Orders</h3>
+      <a href="index.html" class="btn btn-primary btn-sm" data-i18n="profile_buy_more">+ Buy More</a>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="orders-table" id="orders-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th data-i18n="profile_th_card">Gift Card</th>
+            <th data-i18n="profile_th_qty">Qty</th>
+            <th data-i18n="profile_th_total">Total</th>
+            <th data-i18n="profile_th_status">Status</th>
+            <th data-i18n="profile_th_date">Date</th>
+            <th data-i18n="profile_th_action">Action</th>
+          </tr>
+        </thead>
+        <tbody id="orders-body">
+          <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--gray-400);">Loading orders…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Code View Modal -->
+<div class="modal-overlay" id="code-modal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <h3 data-i18n="profile_code_title">🎁 Your Gift Card Code</h3>
+      <button class="modal-close" onclick="closeCodeModal()" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:2rem;">
+      <div style="background:linear-gradient(135deg,var(--rose-50),var(--pink-100));border-radius:12px;padding:1.5rem;margin-bottom:1rem;border:2px solid var(--rose-200);">
+        <div style="font-size:.85rem;color:var(--gray-400);font-weight:600;margin-bottom:.5rem;" data-i18n="profile_code_label">CODE</div>
+        <div id="code-display" style="font-family:'Courier New',monospace;font-size:1.35rem;font-weight:700;letter-spacing:.08em;color:var(--rose-700);word-break:break-all;padding:.75rem;"></div>
+      </div>
+      <small style="color:var(--gray-400);display:block;margin-bottom:1rem;" data-i18n="profile_code_hint">Tap or click the code to copy it</small>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeCodeModal()" data-i18n="profile_close">Close</button>
+      <button class="btn btn-primary" onclick="copyDisplayedCode()" data-i18n="profile_copy_code">📋 Copy Code</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="js/api.js"></script>
+<script>
+  if (!requireAuth()) throw new Error('Not authenticated');
+
+  async function loadProfile() {
+    try {
+      const user = await api.get('/auth/me');
+      const initials = (user.full_name || user.username).slice(0,2).toUpperCase();
+      document.getElementById('avatar-initials').textContent = initials;
+      document.getElementById('profile-name').textContent   = user.full_name || user.username;
+      document.getElementById('profile-email').textContent  = user.email;
+      document.getElementById('profile-since').textContent  =
+        'Member since ' + new Date(user.created_at).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    } catch {}
+  }
+
+  async function loadOrders() {
+    try {
+      const orders = await api.get('/orders');
+      const total     = orders.length;
+      const pending   = orders.filter(o => o.status === 'pending').length;
+      const delivered = orders.filter(o => o.status === 'delivered').length;
+      const spent     = orders.filter(o => o.status !== 'cancelled')
+                              .reduce((s,o) => s + parseFloat(o.total_price), 0);
+
+      document.getElementById('stat-total').textContent     = total;
+      document.getElementById('stat-pending').textContent   = pending;
+      document.getElementById('stat-delivered').textContent = delivered;
+      // Aggregate spend across currencies → show with most common currency or combined
+      let spentByType = {};
+      orders.filter(o => o.status !== 'cancelled').forEach(o => {
+        const cur = o.currency || 'USD';
+        spentByType[cur] = (spentByType[cur] || 0) + parseFloat(o.total_price);
+      });
+      let spentDisplay = Object.entries(spentByType).map(([c, v]) => fmtPrice(v, c)).join(' + ') || fmtPrice(0, 'USD');
+      document.getElementById('stat-spent').textContent = spentDisplay;
+
+      const tbody = document.getElementById('orders-body');
+      if (!orders.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--gray-400);">
+          No orders yet. <a href="index.html" style="color:var(--rose-500)">Browse cards →</a></td></tr>`;
+        return;
+      }
+      tbody.innerHTML = orders.map(o => `
+        <tr class="fade-in">
+          <td><strong>#${o.id}</strong></td>
+          <td>
+            <div style="font-weight:600;font-size:.88rem;">${escHtml(o.card_name)}</div>
+            <div style="font-size:.72rem;color:var(--gray-400);">${fmtPrice(o.denomination, o.currency)} value</div>
+          </td>
+          <td>${o.quantity}</td>
+          <td style="font-weight:700;color:var(--rose-600);">${fmtPrice(o.total_price, o.currency)}</td>
+          <td><span class="status-badge ${o.status}">${o.status}</span></td>
+          <td style="font-size:.78rem;color:var(--gray-400);">${formatDate(o.created_at)}</td>
+          <td>
+            ${o.status === 'delivered'
+              ? `<button class="btn btn-primary btn-sm" onclick="showCodeModal(${o.id})">📬 View Code</button>`
+              : o.status === 'pending'
+              ? `<button class="btn btn-ghost btn-sm" onclick="cancelOrder(${o.id}, this)">Cancel</button>`
+              : '<span style="color:var(--gray-400);font-size:.8rem;">—</span>'}
+          </td>
+        </tr>
+      `).join('');
+    } catch (e) {
+      document.getElementById('orders-body').innerHTML =
+        '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--rose-500);">Failed to load orders.</td></tr>';
+    }
+  }
+
+  async function cancelOrder(id, btn) {
+    if (!confirm('Cancel this order?')) return;
+    btn.disabled = true; btn.textContent = 'Cancelling…';
+    try {
+      await api.post(`/orders/${id}/cancel`);
+      showToast('Order cancelled.', 'success');
+      loadOrders();
+    } catch (e) {
+      showToast(e.message || 'Cancel failed.', 'error');
+      btn.disabled = false; btn.textContent = 'Cancel';
+    }
+  }
+
+  function escHtml(str) {
+    return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function formatDate(iso) {
+    return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  }
+  function logout() { clearSession(); window.location.href = 'index.html'; }
+
+  let currentCode = '';
+
+  async function showCodeModal(orderId) {
+    try {
+      const messages = await api.get('/inbox');
+      const msg = messages.find(m => m.order_id === orderId);
+      if (!msg) {
+        showToast('Code not found. Check your inbox.', 'error');
+        return;
+      }
+      // Extract code from message body (format: "Your Code: XXXXX")
+      const match = msg.body.match(/Your Code:\s*([^\r\n]+)/);
+      const code = match ? match[1].trim() : 'Code not available';
+      currentCode = code;
+      document.getElementById('code-display').textContent = code;
+      document.getElementById('code-display').onclick = () => copyDisplayedCode();
+      document.getElementById('code-modal').classList.add('open');
+    } catch (e) {
+      showToast('Failed to fetch code.', 'error');
+    }
+  }
+
+  function closeCodeModal() {
+    document.getElementById('code-modal').classList.remove('open');
+  }
+
+  async function copyDisplayedCode() {
+    if (!currentCode) return;
+    try {
+      await navigator.clipboard.writeText(currentCode);
+      showToast('Code copied to clipboard!', 'success', 1500);
+    } catch {
+      // Fallback
+      const el = document.getElementById('code-display');
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      showToast('Code selected - use Ctrl+C to copy', 'info');
+    }
+  }
+
+  updateNavAuth();
+  loadProfile();
+  loadOrders();
+  refreshUnreadBadge();
+</script>
+<script src="js/translations.js"></script>
+<script src="js/language-switcher.js"></script>
+</body>
+</html>

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inbox — Dit Shop</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;600;700&family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Highlight gift-card code inside an inbox message */
+    .gift-code-highlight {
+      display: inline-block;
+      font-family: 'Courier New', monospace;
+      font-size: 1.05em;
+      font-weight: 700;
+      letter-spacing: .04em;
+      color: #be123c;                                  /* rose-700 */
+      background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+      padding: .25rem .65rem;
+      border-radius: 8px;
+      border: 1px dashed #fda4af;                      /* rose-300 */
+      box-shadow: 0 2px 8px rgba(244,114,182,.15);
+      margin: 0 .15rem;
+      user-select: all;                                /* one click selects the whole code */
+    }
+    .message-body .gift-code-line {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      font-weight: 600;
+      color: var(--rose-600);
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container navbar-inner">
+    <a href="index.html" class="navbar-brand"><div class="logo-icon">🌸</div>Dit Shop</a>
+    <ul class="navbar-nav">
+      <li><a href="index.html" data-i18n="nav_store">Store</a></li>
+      <li><a href="profile.html" data-i18n="nav_my_orders">My Orders</a></li>
+      <li><a href="inbox.html" class="active" data-i18n="nav_inbox">Inbox</a></li>
+      <li class="nav-admin" style="display:none"><a href="admin/index.html" data-i18n="nav_admin">Admin</a></li>
+    </ul>
+    <div class="navbar-actions nav-profile">
+      <div class="language-switcher">
+        <button class="language-switcher-btn" id="languageSwitcherBtn" aria-label="Select language" aria-haspopup="true" aria-expanded="false">
+          <div class="language-switcher-btn-content">
+            <div class="language-switcher-btn-text">
+              <span class="language-switcher-btn-flag">🇬🇧</span>
+              <span class="language-switcher-btn-name">English</span>
+              <span class="language-switcher-btn-code">(EN)</span>
+            </div>
+          </div>
+          <span class="language-switcher-btn-arrow">▼</span>
+        </button>
+
+        <div class="language-switcher-menu" id="languageSwitcherMenu">
+          <div class="language-switcher-item selected" data-lang="en">
+            <span class="language-switcher-item-flag">🇬🇧</span>
+            <div class="language-switcher-item-text">
+              <span class="language-switcher-item-name">English</span>
+              <span class="language-switcher-item-code">EN</span>
+            </div>
+          </div>
+          <div class="language-switcher-item" data-lang="th">
+            <span class="language-switcher-item-flag">🇹🇭</span>
+            <div class="language-switcher-item-text">
+              <span class="language-switcher-item-name">ไทย</span>
+              <span class="language-switcher-item-code">TH</span>
+            </div>
+          </div>
+          <div class="language-switcher-item" data-lang="lo">
+            <span class="language-switcher-item-flag">🇱🇦</span>
+            <div class="language-switcher-item-text">
+              <span class="language-switcher-item-name">ລາວ</span>
+              <span class="language-switcher-item-code">LA</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <a href="profile.html" class="btn btn-ghost btn-sm">👤 <span class="nav-username"></span></a>
+      <button class="btn btn-outline btn-sm" onclick="logout()" data-i18n="nav_logout">Logout</button>
+    </div>
+  </div>
+</nav>
+
+<div class="container section">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.5rem;" class="fade-in">
+    <h2 data-i18n="inbox_title">📬 My Inbox</h2>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+      <button class="btn btn-primary btn-sm" onclick="openHelpModal()" data-i18n="inbox_help_btn">🆘 HELP — Contact Admin</button>
+      <button class="btn btn-outline btn-sm" id="mark-all-btn" onclick="markAllRead()" data-i18n="inbox_mark_all">Mark all as read</button>
+    </div>
+  </div>
+
+  <div class="inbox-layout fade-in-2">
+    <!-- Sidebar: message list -->
+    <aside class="inbox-sidebar">
+      <h3><span data-i18n="inbox_messages">Messages</span> <span id="unread-chip" style="display:none;background:var(--rose-500);color:#fff;font-size:.65rem;padding:.15rem .45rem;border-radius:10px;font-weight:700;"></span></h3>
+      <div class="inbox-list" id="inbox-list">
+        <div class="skeleton skeleton-text w-80"></div>
+        <div class="skeleton skeleton-text w-60"></div>
+        <div class="skeleton skeleton-text w-80"></div>
+      </div>
+    </aside>
+
+    <!-- Message content panel -->
+    <main class="inbox-content" id="inbox-content">
+      <div class="inbox-empty">
+        <div class="big-icon">💌</div>
+        <p data-i18n="inbox_select">Select a message to read it</p>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ── HELP Compose Modal ─────────────────────────────────── -->
+<div class="modal-overlay" id="help-modal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header" style="background:linear-gradient(to right,var(--rose-50),var(--pink-100));">
+      <h3 data-i18n="inbox_help_title">🆘 Contact Admin</h3>
+      <button class="modal-close" onclick="closeHelpModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:.85rem;color:var(--gray-500);margin-bottom:1rem;" data-i18n="inbox_help_intro">
+        Need help with an order, payment, or something else? Send a message and an admin will reply to your inbox.
+      </p>
+      <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.35rem;" data-i18n="inbox_help_subject_label">Subject</label>
+      <input type="text" id="help-subject" class="form-control" maxlength="200"
+             placeholder="e.g. Question about order #12" data-i18n-ph="inbox_help_subject_ph" />
+      <label style="display:block;font-size:.82rem;font-weight:600;margin:.85rem 0 .35rem;" data-i18n="inbox_help_body_label">Message</label>
+      <textarea id="help-body" class="form-control" rows="6" maxlength="4000"
+                placeholder="Describe what you need help with…" data-i18n-ph="inbox_help_body_ph"></textarea>
+      <div style="font-size:.72rem;color:var(--gray-400);text-align:right;margin-top:.25rem;">
+        <span id="help-char-count">0</span> / 4000
+      </div>
+
+      <!-- Attachments (up to 3 images + 1 video) -->
+      <div style="margin-top:.9rem;">
+        <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.35rem;">
+          <span data-i18n="inbox_help_attach_label">Attach Files</span>
+          <span style="font-weight:400;color:var(--gray-400);" data-i18n="inbox_help_attach_hint">(up to 3 images + 1 video, 50 MB each)</span>
+        </label>
+        <label for="help-files" style="display:inline-flex;align-items:center;gap:.4rem;cursor:pointer;padding:.4rem .85rem;border:1.5px dashed var(--rose-300);border-radius:8px;font-size:.8rem;color:var(--rose-600);background:var(--rose-50);" data-i18n="inbox_help_add_files">
+          📎 Add files
+          <input type="file" id="help-files" accept="image/*,video/*" multiple style="display:none;" onchange="addHelpFiles(this)" />
+        </label>
+        <span id="help-files-hint" style="font-size:.72rem;color:var(--gray-400);margin-left:.5rem;">0/3 images · 0/1 video</span>
+        <div id="help-files-preview" style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.6rem;"></div>
+        <div id="help-files-status" style="display:none;font-size:.75rem;color:var(--gray-400);margin-top:.35rem;"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeHelpModal()" data-i18n="modal_cancel">Cancel</button>
+      <button class="btn btn-primary" id="help-send-btn" onclick="sendHelp()" data-i18n="inbox_help_send">Send to Admin</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="js/api.js"></script>
+<script>
+  if (!requireAuth()) throw new Error('Not authenticated');
+
+  let messages = [];
+  let activeId = null;
+
+  async function loadInbox() {
+    try {
+      messages = await api.get('/inbox');
+      renderList();
+      refreshUnreadBadge();
+    } catch (e) {
+      document.getElementById('inbox-list').innerHTML =
+        '<p class="text-muted" style="font-size:.85rem;">Failed to load messages.</p>';
+    }
+  }
+
+  function renderList() {
+    const list = document.getElementById('inbox-list');
+    const unread = messages.filter(m => !m.is_read).length;
+    const chip = document.getElementById('unread-chip');
+    if (unread > 0) { chip.textContent = unread; chip.style.display = 'inline'; }
+    else chip.style.display = 'none';
+
+    if (!messages.length) {
+      list.innerHTML = '<p class="text-muted" style="font-size:.85rem;text-align:center;padding:1rem;">No messages yet.</p>';
+      return;
+    }
+
+    list.innerHTML = messages.map(m => `
+      <div class="inbox-item ${m.is_read ? '' : 'unread'} ${m.id === activeId ? 'active' : ''}"
+           onclick="openMessage(${m.id})" data-id="${m.id}">
+        <div style="display:flex;align-items:center;">
+          ${!m.is_read ? '<span class="unread-dot"></span>' : '<span style="display:inline-block;width:8px;margin-right:.4rem;"></span>'}
+          <span class="inbox-item-subject">${escHtml(m.subject)}</span>
+        </div>
+        <div class="inbox-item-date">${formatDate(m.created_at)}</div>
+      </div>
+    `).join('');
+  }
+
+  async function openMessage(id) {
+    activeId = id;
+    renderList();
+
+    const msg = messages.find(m => m.id === id);
+    if (!msg) return;
+
+    document.getElementById('inbox-content').innerHTML = `
+      <div class="slide-right">
+        <div class="message-header">
+          <div class="message-subject">${escHtml(msg.subject)}</div>
+          <div class="message-meta">
+            <span>From: <strong>${escHtml(msg.sender)}</strong></span>
+            <span>${formatDate(msg.created_at)}</span>
+            ${msg.order_id ? `<span>Order #${msg.order_id}</span>` : ''}
+          </div>
+        </div>
+        <div class="message-body">${renderMessageBody(msg.body)}</div>
+        ${renderAttachments(msg.image_url)}
+        <div style="margin-top:1.5rem;display:flex;gap:.75rem;">
+          <button class="btn btn-outline btn-sm" onclick="deleteMessage(${msg.id})">🗑 Delete</button>
+          ${msg.order_id ? `<a href="profile.html" class="btn btn-ghost btn-sm">View Orders</a>` : ''}
+        </div>
+      </div>
+    `;
+
+    if (!msg.is_read) {
+      try {
+        await api.patch(`/inbox/${id}/read`);
+        msg.is_read = 1;
+        renderList();
+        refreshUnreadBadge();
+      } catch {}
+    }
+  }
+
+  async function markAllRead() {
+    try {
+      await api.patch('/inbox/read-all');
+      messages.forEach(m => m.is_read = 1);
+      renderList();
+      refreshUnreadBadge();
+      showToast('All messages marked as read.', 'success');
+    } catch { showToast('Failed to update.', 'error'); }
+  }
+
+  async function deleteMessage(id) {
+    if (!confirm('Delete this message?')) return;
+    try {
+      await api.delete(`/inbox/${id}`);
+      messages = messages.filter(m => m.id !== id);
+      activeId = null;
+      renderList();
+      document.getElementById('inbox-content').innerHTML = `
+        <div class="inbox-empty"><div class="big-icon">💌</div><p>Select a message to read it</p></div>`;
+      showToast('Message deleted.', 'success');
+    } catch { showToast('Delete failed.', 'error'); }
+  }
+
+  function escHtml(str) {
+    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  /**
+   * Render an inbox message body:
+   *  - escape HTML
+   *  - highlight the gift-card code (line that starts with "Your Code:")
+   *    by wrapping the value in a rose-pink chip the user can click to select.
+   */
+  function renderMessageBody(rawText) {
+    const safe = escHtml(rawText);
+    return safe.replace(
+      /(Your Code:\s*)([^\r\n]+)/gi,
+      (_, label, code) =>
+        `<span class="gift-code-line">🎁 ${label}</span><span class="gift-code-highlight" onclick="copyCode(this)" title="Click to copy">${code.trim()}</span>`
+    );
+  }
+
+  /** Copy the highlighted code to clipboard when the chip is clicked. */
+  async function copyCode(el) {
+    const code = el.textContent.trim();
+    try {
+      await navigator.clipboard.writeText(code);
+      showToast('Code copied!', 'success', 1500);
+    } catch {
+      // Fallback: select the text so the user can Ctrl+C
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+  }
+
+  function formatDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) +
+           ' ' + d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  function logout() { clearSession(); window.location.href = 'index.html'; }
+
+  /* ── Attachment helpers ───────────────────────────────── */
+  function parseAttachments(raw) {
+    if (!raw) return [];
+    try { const p = JSON.parse(raw); return Array.isArray(p) ? p : [raw]; }
+    catch { return [raw]; }
+  }
+  function renderAttachments(raw) {
+    const urls = parseAttachments(raw);
+    if (!urls.length) return '';
+    const items = urls.map(url => {
+      if (/\.(mp4|webm|ogg|mov)$/i.test(url))
+        return `<video src="${url}" controls style="max-width:100%;max-height:220px;border-radius:10px;border:1px solid var(--rose-200);display:block;margin-bottom:.4rem;"></video>`;
+      return `<a href="${url}" target="_blank" rel="noopener"><img src="${url}" alt="attachment" style="max-width:100%;max-height:220px;border-radius:10px;border:1px solid var(--rose-200);cursor:zoom-in;display:block;margin-bottom:.4rem;"></a>`;
+    }).join('');
+    return `<div style="margin-top:.85rem;">${items}</div>`;
+  }
+
+  /* ── HELP modal logic ─────────────────────────────────── */
+  let helpFiles = []; // [{file, type:'image'|'video', objectUrl}]
+
+  function openHelpModal() {
+    document.getElementById('help-subject').value = '';
+    document.getElementById('help-body').value = '';
+    document.getElementById('help-char-count').textContent = '0';
+    clearHelpFiles();
+    document.getElementById('help-modal').classList.add('open');
+    setTimeout(() => document.getElementById('help-subject').focus(), 50);
+  }
+  function closeHelpModal() {
+    document.getElementById('help-modal').classList.remove('open');
+    clearHelpFiles();
+  }
+
+  function addHelpFiles(input) {
+    const newFiles = Array.from(input.files);
+    input.value = '';
+    for (const file of newFiles) {
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/');
+      if (!isImage && !isVideo) continue;
+      const imgs = helpFiles.filter(f => f.type === 'image').length;
+      const vids = helpFiles.filter(f => f.type === 'video').length;
+      if (isImage && imgs >= 3) { showToast(t('inbox_help_max_images'), 'error'); continue; }
+      if (isVideo && vids >= 1) { showToast(t('inbox_help_max_video'), 'error'); continue; }
+      helpFiles.push({ file, type: isImage ? 'image' : 'video', objectUrl: URL.createObjectURL(file) });
+    }
+    renderHelpFilePreviews();
+  }
+
+  function removeHelpFile(i) {
+    URL.revokeObjectURL(helpFiles[i].objectUrl);
+    helpFiles.splice(i, 1);
+    renderHelpFilePreviews();
+  }
+
+  function renderHelpFilePreviews() {
+    const imgs = helpFiles.filter(f => f.type === 'image').length;
+    const vids = helpFiles.filter(f => f.type === 'video').length;
+    const imgsLabel = (typeof t === 'function') ? t('admin_msg_files_counter_imgs') : 'images';
+    const vidLabel  = (typeof t === 'function') ? t('admin_msg_files_counter_vid')  : 'video';
+    document.getElementById('help-files-hint').textContent = `${imgs}/3 ${imgsLabel} · ${vids}/1 ${vidLabel}`;
+    const container = document.getElementById('help-files-preview');
+    container.innerHTML = '';
+    helpFiles.forEach((f, i) => {
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'position:relative;display:inline-block;';
+      const media = document.createElement(f.type === 'video' ? 'video' : 'img');
+      media.src = f.objectUrl;
+      media.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--rose-200);display:block;';
+      if (f.type === 'video') media.muted = true;
+      wrap.appendChild(media);
+      const btn = document.createElement('button');
+      btn.innerHTML = '&times;';
+      btn.title = 'Remove';
+      btn.onclick = () => removeHelpFile(i);
+      btn.style.cssText = 'position:absolute;top:-6px;right:-6px;background:var(--rose-500);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;';
+      wrap.appendChild(btn);
+      container.appendChild(wrap);
+    });
+  }
+
+  function clearHelpFiles() {
+    helpFiles.forEach(f => URL.revokeObjectURL(f.objectUrl));
+    helpFiles = [];
+    const fi = document.getElementById('help-files');
+    if (fi) fi.value = '';
+    renderHelpFilePreviews();
+    const st = document.getElementById('help-files-status');
+    if (st) { st.style.display = 'none'; st.textContent = ''; }
+  }
+
+  document.addEventListener('input', e => {
+    if (e.target && e.target.id === 'help-body') {
+      document.getElementById('help-char-count').textContent = e.target.value.length;
+    }
+  });
+
+  async function sendHelp() {
+    const subject = document.getElementById('help-subject').value.trim();
+    const body    = document.getElementById('help-body').value.trim();
+    const tx = (k, fb) => (typeof t === 'function' ? t(k) : fb);
+    if (!subject || !body) { showToast(tx('inbox_help_need_fields', 'Please fill in both subject and message.'), 'error'); return; }
+    const btn = document.getElementById('help-send-btn');
+    btn.disabled = true; btn.textContent = tx('inbox_help_sending', 'Sending…');
+    const statusEl = document.getElementById('help-files-status');
+    try {
+      const attachments = [];
+      if (helpFiles.length > 0) {
+        statusEl.style.display = 'block';
+        for (let i = 0; i < helpFiles.length; i++) {
+          statusEl.textContent = tx('admin_msg_uploading_n', 'Uploading file {i} of {n}…').replace('{i}', i + 1).replace('{n}', helpFiles.length);
+          const fd = new FormData();
+          fd.append('image', helpFiles[i].file);
+          const { url } = await api.upload('/inbox/upload-image', fd);
+          attachments.push(url);
+        }
+        statusEl.style.display = 'none';
+      }
+      await api.post('/inbox/help', { subject, body, attachments });
+      showToast(tx('inbox_help_sent_ok', 'Your message was sent to admin.'), 'success');
+      closeHelpModal();
+    } catch (e) {
+      if (statusEl) { statusEl.style.display = 'none'; }
+      showToast(e.message || tx('inbox_help_send_failed', 'Failed to send.'), 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = tx('inbox_help_send', 'Send to Admin');
+    }
+  }
+
+  loadInbox();
+  updateNavAuth();
+</script>
+<script src="js/translations.js"></script>
+<script src="js/language-switcher.js"></script>
+</body>
+</html>
