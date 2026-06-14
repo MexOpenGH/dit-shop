@@ -1,0 +1,14 @@
+{
+  "name": "dit-shop",
+  "version": "1.0.0",
+  "description": "Dit Shop — gift card store (Express + SQLite)",
+  "private": true,
+  "scripts": {
+    "install:all": "cd backend && npm install",
+    "build": "cd backend && npm install",
+    "start": "cd backend && node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
