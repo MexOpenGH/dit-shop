@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orders — Dit Shop Admin</title>
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/animations.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;600;700&family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Soft-rose "cancel" button — danger action without breaking the pink theme */
+    .btn-cancel {
+      background: #fff;
+      color: #be123c;
+      border: 1px solid #fecdd3;
+      transition: all .18s ease;
+    }
+    .btn-cancel:hover {
+      background: linear-gradient(135deg, #fb7185, #f43f5e);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 4px 14px rgba(244,63,94,.35);
+    }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+
+  <aside class="admin-sidebar">
+    <div class="brand">🌸 Dit Shop<br><small style="font-size:.65rem;opacity:.5;font-weight:400;">Admin Panel</small></div>
+    <nav class="admin-nav">
+      <a href="index.html" data-i18n="admin_dashboard">📊 Dashboard</a>
+      <a href="stocks.html" data-i18n="admin_stock">📦 Stock Manager</a>
+      <a href="orders.html" class="active" data-i18n="admin_orders_link">🛒 Orders</a>
+      <a href="messages.html" data-i18n="admin_messages_link">💬 Messages</a>
+      <a href="../index.html" data-i18n="admin_view_store">🏪 View Store</a>
+    </nav>
+    <div style="padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,.08);">
+      <button class="btn btn-outline btn-sm w-100" onclick="logout()" style="color:#9ca3af;border-color:rgba(255,255,255,.15);" data-i18n="admin_logout">Logout</button>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <h1 data-i18n="admin_orders_title">🛒 Order Management</h1>
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <div class="language-switcher">
+          <button class="language-switcher-btn" id="languageSwitcherBtn" aria-label="Select language" aria-haspopup="true" aria-expanded="false">
+            <div class="language-switcher-btn-content">
+              <div class="language-switcher-btn-text">
+                <span class="language-switcher-btn-flag">🇬🇧</span>
+                <span class="language-switcher-btn-name">English</span>
+                <span class="language-switcher-btn-code">(EN)</span>
+              </div>
+            </div>
+            <span class="language-switcher-btn-arrow">▼</span>
+          </button>
+
+          <div class="language-switcher-menu" id="languageSwitcherMenu">
+            <div class="language-switcher-item selected" data-lang="en">
+              <span class="language-switcher-item-flag">🇬🇧</span>
+              <div class="language-switcher-item-text">
+                <span class="language-switcher-item-name">English</span>
+                <span class="language-switcher-item-code">EN</span>
+              </div>
+            </div>
+            <div class="language-switcher-item" data-lang="th">
+              <span class="language-switcher-item-flag">🇹🇭</span>
+              <div class="language-switcher-item-text">
+                <span class="language-switcher-item-name">ไทย</span>
+                <span class="language-switcher-item-code">TH</span>
+              </div>
+            </div>
+            <div class="language-switcher-item" data-lang="lo">
+              <span class="language-switcher-item-flag">🇱🇦</span>
+              <div class="language-switcher-item-text">
+                <span class="language-switcher-item-name">ລາວ</span>
+                <span class="language-switcher-item-code">LA</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <span id="order-count" style="font-size:.82rem;color:var(--gray-400);"></span>
+        <button class="btn btn-outline btn-sm" onclick="loadOrders()" data-i18n="admin_refresh">↻ Refresh</button>
+      </div>
+    </div>
+
+    <div class="admin-content">
+
+      <!-- Filters -->
+      <div class="admin-card fade-in" style="margin-bottom:1.25rem;">
+        <div class="admin-card-body" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;padding:.85rem 1.5rem;">
+          <div class="category-filter" id="status-filter" style="margin:0;">
+            <button class="filter-btn active" data-status="" data-i18n="admin_filter_all">All</button>
+            <button class="filter-btn" data-status="pending" data-i18n="admin_filter_pending">Pending</button>
+            <button class="filter-btn" data-status="delivered" data-i18n="admin_filter_delivered">Delivered</button>
+            <button class="filter-btn" data-status="cancelled" data-i18n="admin_filter_cancelled">Cancelled</button>
+          </div>
+          <input type="search" class="form-control" id="order-search"
+            placeholder="Search by user, card, or order #…" data-i18n-ph="admin_search_orders_ph" style="max-width:260px;"
+            oninput="applyFilters()" />
+        </div>
+      </div>
+
+      <!-- Orders table -->
+      <div class="admin-card fade-in-2">
+        <div style="overflow-x:auto;">
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th data-i18n="admin_th_order_num">Order #</th>
+                <th data-i18n="admin_th_customer">Customer</th>
+                <th data-i18n="admin_th_gift_card">Gift Card</th>
+                <th data-i18n="admin_th_qty">Qty</th>
+                <th data-i18n="admin_th_total">Total</th>
+                <th data-i18n="admin_th_status">Status</th>
+                <th data-i18n="admin_th_date">Date</th>
+                <th data-i18n="admin_th_action">Action</th>
+              </tr>
+            </thead>
+            <tbody id="orders-tbody">
+              <tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--gray-400);" data-i18n="admin_loading">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── Confirm Order Modal ────────────────────────────────── -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal">
+    <div class="modal-header" style="background:linear-gradient(to right,var(--rose-50),var(--pink-100));">
+      <h3 data-i18n="admin_confirm_order">Confirm Order</h3>
+      <button class="modal-close" onclick="closeConfirmModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="confirm-order-info" style="background:var(--rose-50);border-radius:10px;padding:1rem;margin-bottom:1.25rem;font-size:.88rem;line-height:1.8;"></div>
+      <div style="background:#fef3c7;border-radius:10px;padding:.85rem 1rem;font-size:.82rem;color:#92400e;display:flex;gap:.5rem;align-items:flex-start;">
+        <span>⚠️</span>
+        <span data-i18n="admin_confirm_warning">This will assign an available code from stock to this order and deliver it to the customer's inbox. This action cannot be undone.</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeConfirmModal()" data-i18n="modal_cancel">Cancel</button>
+      <button class="btn btn-primary" id="confirm-btn" onclick="submitConfirm()" data-i18n="admin_confirm_deliver">
+        ✅ Confirm &amp; Deliver
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Order Detail Modal ─────────────────────────────────── -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header">
+      <h3 id="detail-title" data-i18n="admin_order_details">Order Details</h3>
+      <button class="modal-close" onclick="document.getElementById('detail-modal').classList.remove('open')">&times;</button>
+    </div>
+    <div class="modal-body" id="detail-body" style="font-size:.88rem;line-height:1.9;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="document.getElementById('detail-modal').classList.remove('open')" data-i18n="admin_close">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="../js/api.js"></script>
+<script src="../js/translations.js"></script>
+<script src="../js/language-switcher.js"></script>
+<script>
+  if (!requireAuth(true)) throw new Error('Admin required');
+
+  let allOrders     = [];
+  let activeStatus  = new URLSearchParams(location.search).get('status') || '';
+  let confirmTarget = null;
+
+  // Set initial filter button
+  document.querySelectorAll('#status-filter .filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.status === activeStatus);
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#status-filter .filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeStatus = btn.dataset.status;
+      applyFilters();
+    });
+  });
+
+  async function loadOrders() {
+    document.getElementById('orders-tbody').innerHTML =
+      `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--gray-400);">${t('admin_loading')}</td></tr>`;
+    try {
+      allOrders = await api.get('/admin/orders');
+      applyFilters();
+    } catch { showToast('Failed to load orders.', 'error'); }
+  }
+
+  function applyFilters() {
+    const q = (document.getElementById('order-search').value || '').toLowerCase();
+    let list = allOrders;
+    if (activeStatus) list = list.filter(o => o.status === activeStatus);
+    if (q) list = list.filter(o =>
+      String(o.id).includes(q) ||
+      o.username.toLowerCase().includes(q) ||
+      o.email.toLowerCase().includes(q) ||
+      o.card_name.toLowerCase().includes(q)
+    );
+    document.getElementById('order-count').textContent = `${list.length} ${list.length!==1?t('admin_order_count_plural'):t('admin_order_count_singular')}`;
+    renderOrders(list);
+  }
+
+  function renderOrders(list) {
+    const tbody = document.getElementById('orders-tbody');
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--gray-400);">${t('admin_no_orders_match')}</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = list.map(o => `
+      <tr class="fade-in">
+        <td><strong>#${o.id}</strong></td>
+        <td>
+          <div style="font-weight:600;font-size:.88rem;">${escHtml(o.username)}</div>
+          <div style="font-size:.72rem;color:var(--gray-400);">${escHtml(o.email)}</div>
+        </td>
+        <td>
+          <div style="font-weight:600;font-size:.85rem;">${escHtml(o.card_name)}</div>
+          <div style="font-size:.72rem;color:var(--gray-400);">${fmtPrice(o.denomination, o.currency)} value</div>
+        </td>
+        <td>${o.quantity}</td>
+        <td style="font-weight:700;color:var(--rose-600);">${fmtPrice(o.total_price, o.currency)}</td>
+        <td><span class="status-badge ${o.status}">${t('admin_status_' + o.status)}</span></td>
+        <td style="font-size:.75rem;color:var(--gray-400);">${formatDate(o.created_at)}</td>
+        <td>
+          <div style="display:flex;gap:.3rem;flex-wrap:wrap;">
+            <button class="btn btn-outline btn-sm" onclick="viewDetail(${o.id})">${t('admin_btn_detail')}</button>
+            ${o.status === 'pending'
+              ? `<button class="btn btn-primary btn-sm pulse" onclick="openConfirm(${o.id})">${t('admin_btn_confirm')}</button>
+                 <button class="btn btn-sm btn-cancel" onclick="cancelOrder(${o.id})">${t('admin_btn_cancel')}</button>`
+              : o.status === 'delivered' && o.assigned_code
+              ? `<span title="${escHtml(o.assigned_code)}" style="font-size:.7rem;background:var(--rose-50);padding:.2rem .5rem;border-radius:6px;color:var(--rose-600);cursor:help;">${t('admin_btn_code_ok')}</span>`
+              : ''}
+          </div>
+        </td>
+      </tr>`).join('');
+  }
+
+  // ── Detail Modal ──────────────────────────────────────────
+  function viewDetail(id) {
+    const o = allOrders.find(x => x.id === id);
+    if (!o) return;
+    document.getElementById('detail-title').textContent = `Order #${o.id}`;
+    document.getElementById('detail-body').innerHTML = `
+      <table style="width:100%;border-collapse:collapse;">
+        ${row(t('admin_detail_customer'), `${escHtml(o.username)} (${escHtml(o.email)})`)}
+        ${row(t('admin_detail_gift_card'), escHtml(o.card_name))}
+        ${row(t('admin_detail_value'), fmtPrice(o.denomination, o.currency))}
+        ${row(t('admin_detail_quantity'), o.quantity)}
+        ${row(t('admin_detail_total_paid'), `<strong style="color:var(--rose-600);">${fmtPrice(o.total_price, o.currency)}</strong>`)}
+        ${row(t('admin_detail_status'), `<span class="status-badge ${o.status}">${t('admin_status_' + o.status)}</span>`)}
+        ${o.payment_ref ? row(t('admin_detail_payment_ref'), escHtml(o.payment_ref)) : ''}
+        ${o.payment_proof_url
+          ? row(t('admin_detail_payment_receipt'),
+              `<a href="${o.payment_proof_url}" target="_blank" rel="noopener" style="display:inline-block;">
+                 <img src="${o.payment_proof_url}" alt="receipt"
+                      style="max-width:280px;max-height:200px;border-radius:8px;border:1px solid var(--rose-200);cursor:zoom-in;" />
+               </a>`)
+          : ''}
+        ${o.notes ? row(t('admin_detail_notes'), escHtml(o.notes)) : ''}
+        ${o.assigned_code ? row(t('admin_detail_code_assigned'), `<code style="background:var(--rose-50);padding:.2rem .5rem;border-radius:4px;">${escHtml(o.assigned_code)}</code>`) : ''}
+        ${o.confirmed_at ? row(t('admin_detail_confirmed_at'), formatDate(o.confirmed_at)) : ''}
+        ${row(t('admin_detail_ordered_at'), formatDate(o.created_at))}
+      </table>
+    `;
+    document.getElementById('detail-modal').classList.add('open');
+  }
+  function row(label, value) {
+    return `<tr>
+      <td style="padding:.4rem .5rem;font-weight:600;color:var(--gray-600);white-space:nowrap;width:38%;border-bottom:1px solid var(--rose-50);">${label}</td>
+      <td style="padding:.4rem .5rem;border-bottom:1px solid var(--rose-50);">${value}</td>
+    </tr>`;
+  }
+
+  // ── Confirm Modal ─────────────────────────────────────────
+  function openConfirm(id) {
+    const o = allOrders.find(x => x.id === id);
+    if (!o) return;
+    confirmTarget = id;
+    document.getElementById('confirm-order-info').innerHTML = `
+      <div><strong>Order:</strong> #${o.id}</div>
+      <div><strong>Customer:</strong> ${escHtml(o.username)} — ${escHtml(o.email)}</div>
+      <div><strong>Card:</strong> ${escHtml(o.card_name)} (${fmtPrice(o.denomination, o.currency)})</div>
+      <div><strong>Total:</strong> ${fmtPrice(o.total_price, o.currency)}</div>
+    `;
+    document.getElementById('confirm-modal').classList.add('open');
+  }
+  function closeConfirmModal() { document.getElementById('confirm-modal').classList.remove('open'); confirmTarget = null; }
+
+  async function submitConfirm() {
+    if (!confirmTarget) return;
+    const btn = document.getElementById('confirm-btn');
+    btn.disabled = true; btn.textContent = 'Processing…';
+    try {
+      const { code } = await api.post(`/orders/${confirmTarget}/confirm`);
+      showToast(`Order #${confirmTarget} confirmed! Code delivered to user's inbox.`, 'success');
+      closeConfirmModal();
+      await loadOrders();
+    } catch (e) {
+      showToast(e.message || 'Confirmation failed.', 'error');
+    } finally {
+      btn.disabled = false; btn.innerHTML = '✅ Confirm &amp; Deliver';
+    }
+  }
+
+  function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function formatDate(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + ' ' +
+           new Date(iso).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  }
+  // ── Cancel an order (admin) ───────────────────────────────
+  async function cancelOrder(id) {
+    if (!confirm(`Cancel order #${id}?\nThe stock code is not consumed and the customer will see the cancelled status.`)) return;
+    try {
+      await api.post(`/orders/${id}/cancel`);
+      showToast(`Order #${id} cancelled.`, 'success');
+      await loadOrders();
+    } catch (e) { showToast(e.message || 'Cancel failed.', 'error'); }
+  }
+
+  function logout() { clearSession(); window.location.href = '../login.html'; }
+
+  document.getElementById('confirm-modal').addEventListener('click', e => { if (e.target===e.currentTarget) closeConfirmModal(); });
+  document.getElementById('detail-modal').addEventListener('click', e => { if (e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
+  document.addEventListener('keydown', e => { if (e.key==='Escape') { closeConfirmModal(); document.getElementById('detail-modal').classList.remove('open'); } });
+
+  loadOrders();
+  window.addEventListener('languageChanged', () => {
+    applyFilters();
+    if (document.getElementById('detail-modal').classList.contains('open')) {
+      const title = document.getElementById('detail-title').textContent;
+      const open = allOrders.find(o => title.endsWith('#' + o.id));
+      if (open) viewDetail(open.id);
+    }
+  });
+</script>
+</body>
+</html>

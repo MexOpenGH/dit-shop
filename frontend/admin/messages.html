@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Messages — Dit Shop Admin</title>
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/animations.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;600;700&family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    .msg-grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 1.25rem;
+      align-items: start;
+    }
+    @media (max-width: 900px) { .msg-grid { grid-template-columns: 1fr; } }
+
+    .msg-list {
+      max-height: 70vh;
+      overflow-y: auto;
+      padding-right: .25rem;
+    }
+    .msg-item {
+      padding: .85rem 1rem;
+      border-radius: 10px;
+      background: #fff;
+      border: 1px solid var(--rose-100);
+      cursor: pointer;
+      transition: all .18s ease;
+      margin-bottom: .5rem;
+    }
+    .msg-item:hover { background: var(--rose-50); }
+    .msg-item.active {
+      background: linear-gradient(135deg, var(--rose-50), var(--rose-100));
+      border-color: var(--rose-300);
+      box-shadow: 0 4px 14px rgba(244,63,94,.12);
+    }
+    .msg-item.unread { border-left: 4px solid var(--rose-500); }
+    .msg-item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: .5rem;
+    }
+    .msg-from { font-weight: 700; font-size: .9rem; color: var(--rose-700); }
+    .msg-subj { font-size: .82rem; color: var(--gray-600); margin-top: .15rem; line-height: 1.3; }
+    .msg-date { font-size: .68rem; color: var(--gray-400); white-space: nowrap; }
+    .msg-unread-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--rose-500);
+      margin-right: .35rem;
+    }
+
+    .msg-empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--gray-400);
+    }
+    .msg-empty .big-icon { font-size: 3rem; margin-bottom: .75rem; }
+
+    .msg-detail-card { padding: 1.5rem; }
+    .msg-detail-header {
+      border-bottom: 1px solid var(--rose-100);
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+    }
+    .msg-detail-subject {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--rose-700);
+      margin-bottom: .35rem;
+    }
+    .msg-detail-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: .78rem;
+      color: var(--gray-500);
+    }
+    .msg-detail-body {
+      white-space: pre-wrap;
+      font-size: .92rem;
+      line-height: 1.65;
+      color: var(--gray-700);
+      background: var(--rose-50);
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1.25rem;
+    }
+    .reply-box label {
+      display: block;
+      font-size: .8rem;
+      font-weight: 600;
+      margin: .75rem 0 .35rem;
+    }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+
+  <aside class="admin-sidebar">
+    <div class="brand">🌸 Dit Shop<br><small style="font-size:.65rem;opacity:.5;font-weight:400;">Admin Panel</small></div>
+    <nav class="admin-nav">
+      <a href="index.html" data-i18n="admin_dashboard">📊 Dashboard</a>
+      <a href="stocks.html" data-i18n="admin_stock">📦 Stock Manager</a>
+      <a href="orders.html" data-i18n="admin_orders_link">🛒 Orders</a>
+      <a href="messages.html" class="active">
+        <span data-i18n="admin_messages_link">💬 Messages</span> <span id="sidebar-msg-badge" style="display:none;background:var(--rose-500);color:#fff;font-size:.65rem;padding:.1rem .4rem;border-radius:10px;margin-left:.3rem;"></span>
+      </a>
+      <a href="../index.html" data-i18n="admin_view_store">🏪 View Store</a>
+    </nav>
+    <div style="padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,.08);">
+      <button class="btn btn-outline btn-sm w-100" onclick="logout()" style="color:#9ca3af;border-color:rgba(255,255,255,.15);" data-i18n="admin_logout">Logout</button>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <h1 data-i18n="admin_messages_title">💬 User Messages</h1>
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <div class="language-switcher">
+          <button class="language-switcher-btn" id="languageSwitcherBtn" aria-label="Select language" aria-haspopup="true" aria-expanded="false">
+            <div class="language-switcher-btn-content">
+              <div class="language-switcher-btn-text">
+                <span class="language-switcher-btn-flag">🇬🇧</span>
+                <span class="language-switcher-btn-name">English</span>
+                <span class="language-switcher-btn-code">(EN)</span>
+              </div>
+            </div>
+            <span class="language-switcher-btn-arrow">▼</span>
+          </button>
+
+          <div class="language-switcher-menu" id="languageSwitcherMenu">
+            <div class="language-switcher-item selected" data-lang="en">
+              <span class="language-switcher-item-flag">🇬🇧</span>
+              <div class="language-switcher-item-text">
+                <span class="language-switcher-item-name">English</span>
+                <span class="language-switcher-item-code">EN</span>
+              </div>
+            </div>
+            <div class="language-switcher-item" data-lang="th">
+              <span class="language-switcher-item-flag">🇹🇭</span>
+              <div class="language-switcher-item-text">
+                <span class="language-switcher-item-name">ไทย</span>
+                <span class="language-switcher-item-code">TH</span>
+              </div>
+            </div>
+            <div class="language-switcher-item" data-lang="lo">
+              <span class="language-switcher-item-flag">🇱🇦</span>
+              <div class="language-switcher-item-text">
+                <span class="language-switcher-item-name">ລາວ</span>
+                <span class="language-switcher-item-code">LA</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <span id="msg-count" style="font-size:.82rem;color:var(--gray-400);"></span>
+        <button class="btn btn-outline btn-sm" onclick="loadMessages()" data-i18n="admin_refresh">↻ Refresh</button>
+      </div>
+    </div>
+
+    <div class="admin-content">
+
+      <div class="msg-grid fade-in">
+
+        <!-- List -->
+        <div class="admin-card" style="padding:1rem;">
+          <div class="msg-list" id="msg-list">
+            <div class="skeleton skeleton-text w-80 mt-2"></div>
+            <div class="skeleton skeleton-text w-60 mt-2"></div>
+            <div class="skeleton skeleton-text w-80 mt-2"></div>
+          </div>
+        </div>
+
+        <!-- Detail / reply -->
+        <div class="admin-card msg-detail-card" id="msg-detail">
+          <div class="msg-empty">
+            <div class="big-icon">💌</div>
+            <p data-i18n="admin_messages_select">Select a message to read and reply.</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="../js/api.js"></script>
+<script src="../js/translations.js"></script>
+<script src="../js/language-switcher.js"></script>
+<script>
+  if (!requireAuth(true)) throw new Error('Admin required');
+
+  let messages = [];
+  let activeId = null;
+
+  async function loadMessages() {
+    document.getElementById('msg-list').innerHTML =
+      '<div class="skeleton skeleton-text w-80 mt-2"></div>' +
+      '<div class="skeleton skeleton-text w-60 mt-2"></div>';
+    try {
+      messages = await api.get('/admin/messages');
+      renderList();
+      updateBadge();
+    } catch {
+      document.getElementById('msg-list').innerHTML =
+        `<p class="text-muted" style="font-size:.85rem;padding:1rem;text-align:center;">${t('admin_msg_failed_load')}</p>`;
+    }
+  }
+
+  function renderList() {
+    const list = document.getElementById('msg-list');
+    const total = messages.length;
+    const unread = messages.filter(m => !m.is_read).length;
+    document.getElementById('msg-count').textContent =
+      total ? `${total} ${t('admin_msg_total')} · ${unread} ${t('admin_msg_unread')}` : '';
+
+    if (!total) {
+      list.innerHTML = `<div class="msg-empty" style="padding:2rem 1rem;"><div class="big-icon">📭</div><p style="font-size:.85rem;">${t('admin_msg_no_yet')}</p></div>`;
+      return;
+    }
+
+    list.innerHTML = messages.map(m => `
+      <div class="msg-item ${m.is_read ? '' : 'unread'} ${m.id === activeId ? 'active' : ''}"
+           onclick="openMessage(${m.id})">
+        <div class="msg-item-row">
+          <div class="msg-from">
+            ${!m.is_read ? '<span class="msg-unread-dot"></span>' : ''}
+            ${escHtml(m.username)}
+          </div>
+          <div class="msg-date">${formatDate(m.created_at)}</div>
+        </div>
+        <div class="msg-subj">${escHtml(m.subject)}</div>
+      </div>
+    `).join('');
+  }
+
+  function updateBadge() {
+    const unread = messages.filter(m => !m.is_read).length;
+    const badge = document.getElementById('sidebar-msg-badge');
+    if (unread > 0) {
+      badge.textContent = unread;
+      badge.style.display = 'inline-block';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  async function openMessage(id) {
+    activeId = id;
+    renderList();
+    const m = messages.find(x => x.id === id);
+    if (!m) return;
+
+    document.getElementById('msg-detail').innerHTML = `
+      <div class="slide-right">
+        <div class="msg-detail-header">
+          <div class="msg-detail-subject">${escHtml(m.subject)}</div>
+          <div class="msg-detail-meta">
+            <span>From: <strong>${escHtml(m.username)}</strong> &lt;${escHtml(m.email)}&gt;</span>
+            <span>${formatDate(m.created_at)}</span>
+          </div>
+        </div>
+        <div class="msg-detail-body">${escHtml(m.body)}</div>
+        ${renderAttachments(m.image_url)}
+
+        <div class="reply-box">
+          <h4 style="margin:0;font-size:.95rem;color:var(--rose-700);">↩️ ${t('admin_msg_reply_to')} ${escHtml(m.username)}</h4>
+          <label>${t('admin_msg_subject')}</label>
+          <input type="text" class="form-control" id="reply-subject"
+                 value="Re: ${escHtml(m.subject).replace(/"/g,'&quot;')}" maxlength="200" />
+          <label>${t('admin_msg_reply_body')}</label>
+          <textarea class="form-control" id="reply-body" rows="5" maxlength="4000"
+                    placeholder="${t('admin_msg_reply_ph')}"></textarea>
+
+          <div style="margin-top:.75rem;">
+            <label style="display:block;font-size:.8rem;font-weight:600;margin-bottom:.35rem;">
+              ${t('admin_msg_attach_label')} <span style="font-weight:400;color:var(--gray-400);">${t('admin_msg_attach_hint')}</span>
+            </label>
+            <label for="reply-files" style="display:inline-flex;align-items:center;gap:.4rem;cursor:pointer;padding:.35rem .8rem;border:1.5px dashed var(--rose-300);border-radius:8px;font-size:.8rem;color:var(--rose-600);background:var(--rose-50);">
+              ${t('admin_msg_add_files')}
+              <input type="file" id="reply-files" accept="image/*,video/*" multiple style="display:none;" onchange="addReplyFiles(this)" />
+            </label>
+            <span id="reply-files-hint" style="font-size:.72rem;color:var(--gray-400);margin-left:.5rem;">0/3 ${t('admin_msg_files_counter_imgs')} · 0/1 ${t('admin_msg_files_counter_vid')}</span>
+            <div id="reply-files-preview" style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.6rem;"></div>
+            <div id="reply-files-status" style="display:none;font-size:.75rem;color:var(--gray-400);margin-top:.3rem;"></div>
+          </div>
+
+          <div style="display:flex;gap:.5rem;margin-top:1rem;flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" onclick="sendReply(${m.id})">
+              ${t('admin_msg_send_reply')}
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="dismissMessage(${m.id})">
+              ${t('admin_msg_dismiss')}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    setTimeout(() => document.getElementById('reply-body').focus(), 80);
+
+    if (!m.is_read) {
+      try {
+        await api.patch(`/admin/messages/${id}/read`);
+        m.is_read = 1;
+        renderList();
+        updateBadge();
+      } catch {}
+    }
+  }
+
+  /* ── Attachment helpers ──────────────────────────────── */
+  function parseAttachments(raw) {
+    if (!raw) return [];
+    try { const p = JSON.parse(raw); return Array.isArray(p) ? p : [raw]; }
+    catch { return [raw]; }
+  }
+  function renderAttachments(raw) {
+    const urls = parseAttachments(raw);
+    if (!urls.length) return '';
+    const items = urls.map(url => {
+      if (/\.(mp4|webm|ogg|mov)$/i.test(url))
+        return `<video src="${url}" controls style="max-width:100%;max-height:200px;border-radius:10px;border:1px solid var(--rose-200);display:block;margin-bottom:.4rem;"></video>`;
+      return `<a href="${url}" target="_blank" rel="noopener"><img src="${url}" alt="attachment" style="max-width:100%;max-height:200px;border-radius:10px;border:1px solid var(--rose-200);cursor:zoom-in;display:block;margin-bottom:.4rem;"></a>`;
+    }).join('');
+    return `<div style="margin-top:.75rem;margin-bottom:.75rem;">${items}</div>`;
+  }
+
+  /* ── Reply file state ────────────────────────────────── */
+  let replyFiles = [];
+
+  function addReplyFiles(input) {
+    const newFiles = Array.from(input.files);
+    input.value = '';
+    for (const file of newFiles) {
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/');
+      if (!isImage && !isVideo) continue;
+      const imgs = replyFiles.filter(f => f.type === 'image').length;
+      const vids = replyFiles.filter(f => f.type === 'video').length;
+      if (isImage && imgs >= 3) { showToast(t('admin_msg_max_images'), 'error'); continue; }
+      if (isVideo && vids >= 1) { showToast(t('admin_msg_max_video'), 'error'); continue; }
+      replyFiles.push({ file, type: isImage ? 'image' : 'video', objectUrl: URL.createObjectURL(file) });
+    }
+    renderReplyFilePreviews();
+  }
+
+  function removeReplyFile(i) {
+    URL.revokeObjectURL(replyFiles[i].objectUrl);
+    replyFiles.splice(i, 1);
+    renderReplyFilePreviews();
+  }
+
+  function renderReplyFilePreviews() {
+    const imgs = replyFiles.filter(f => f.type === 'image').length;
+    const vids = replyFiles.filter(f => f.type === 'video').length;
+    const hint = document.getElementById('reply-files-hint');
+    if (hint) hint.textContent = `${imgs}/3 ${t('admin_msg_files_counter_imgs')} · ${vids}/1 ${t('admin_msg_files_counter_vid')}`;
+    const container = document.getElementById('reply-files-preview');
+    if (!container) return;
+    container.innerHTML = '';
+    replyFiles.forEach((f, i) => {
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'position:relative;display:inline-block;';
+      const media = document.createElement(f.type === 'video' ? 'video' : 'img');
+      media.src = f.objectUrl;
+      media.style.cssText = 'width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--rose-200);display:block;';
+      if (f.type === 'video') media.muted = true;
+      wrap.appendChild(media);
+      const btn = document.createElement('button');
+      btn.innerHTML = '&times;';
+      btn.title = 'Remove';
+      btn.onclick = () => removeReplyFile(i);
+      btn.style.cssText = 'position:absolute;top:-6px;right:-6px;background:var(--rose-500);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;';
+      wrap.appendChild(btn);
+      container.appendChild(wrap);
+    });
+  }
+
+  function clearReplyFiles() {
+    replyFiles.forEach(f => URL.revokeObjectURL(f.objectUrl));
+    replyFiles = [];
+    renderReplyFilePreviews();
+    const st = document.getElementById('reply-files-status');
+    if (st) { st.style.display = 'none'; st.textContent = ''; }
+  }
+
+  async function sendReply(id) {
+    const subject = document.getElementById('reply-subject').value.trim();
+    const body    = document.getElementById('reply-body').value.trim();
+    if (!subject || !body) { showToast(t('admin_msg_need_subject_body'), 'error'); return; }
+    const statusEl = document.getElementById('reply-files-status');
+    try {
+      const attachments = [];
+      if (replyFiles.length > 0) {
+        if (statusEl) statusEl.style.display = 'block';
+        for (let i = 0; i < replyFiles.length; i++) {
+          if (statusEl) statusEl.textContent = t('admin_msg_uploading_n').replace('{i}', i + 1).replace('{n}', replyFiles.length);
+          const fd = new FormData();
+          fd.append('image', replyFiles[i].file);
+          const { url } = await api.upload('/inbox/upload-image', fd);
+          attachments.push(url);
+        }
+        if (statusEl) statusEl.style.display = 'none';
+      }
+      await api.post(`/admin/messages/${id}/reply`, { subject, body, attachments });
+      showToast(t('admin_msg_reply_sent'), 'success');
+      clearReplyFiles();
+      const m = messages.find(x => x.id === id);
+      if (m) m.is_read = 1;
+      renderList();
+      updateBadge();
+    } catch (e) {
+      if (statusEl) statusEl.style.display = 'none';
+      showToast(e.message || t('admin_msg_failed_load'), 'error');
+    }
+  }
+
+  async function dismissMessage(id) {
+    if (!confirm(t('admin_msg_dismiss_confirm'))) return;
+    try {
+      await api.delete(`/admin/messages/${id}`);
+      messages = messages.filter(m => m.id !== id);
+      activeId = null;
+      renderList();
+      updateBadge();
+      document.getElementById('msg-detail').innerHTML = `
+        <div class="msg-empty">
+          <div class="big-icon">💌</div>
+          <p>${t('admin_messages_select')}</p>
+        </div>`;
+      showToast(t('admin_msg_dismiss_ok'), 'success');
+    } catch { showToast(t('admin_msg_delete_failed'), 'error'); }
+  }
+
+  function escHtml(str) {
+    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function formatDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-US', { month:'short', day:'numeric' }) +
+           ' ' + d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+  }
+  function logout() { clearSession(); window.location.href = '../login.html'; }
+
+  loadMessages();
+  window.addEventListener('languageChanged', () => {
+    renderList();
+    if (activeId) openMessage(activeId);
+  });
+</script>
+</body>
+</html>

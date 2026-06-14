@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock Manager — Dit Shop Admin</title>
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/animations.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;600;700&family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="admin-layout">
+
+  <aside class="admin-sidebar">
+    <div class="brand">🌸 Dit Shop<br><small style="font-size:.65rem;opacity:.5;font-weight:400;">Admin Panel</small></div>
+    <nav class="admin-nav">
+      <a href="index.html" data-i18n="admin_dashboard">📊 Dashboard</a>
+      <a href="stocks.html" class="active" data-i18n="admin_stock">📦 Stock Manager</a>
+      <a href="orders.html" data-i18n="admin_orders_link">🛒 Orders</a>
+      <a href="messages.html" data-i18n="admin_messages_link">💬 Messages</a>
+      <a href="../index.html" data-i18n="admin_view_store">🏪 View Store</a>
+    </nav>
+    <div style="padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,.08);">
+      <button class="btn btn-outline btn-sm w-100" onclick="logout()" style="color:#9ca3af;border-color:rgba(255,255,255,.15);" data-i18n="admin_logout">Logout</button>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <h1 data-i18n="admin_stocks_title">📦 Stock Manager</h1>
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <div class="language-switcher">
+          <button class="language-switcher-btn" id="languageSwitcherBtn" aria-label="Select language" aria-haspopup="true" aria-expanded="false">
+            <div class="language-switcher-btn-content">
+              <div class="language-switcher-btn-text">
+                <span class="language-switcher-btn-flag">🇬🇧</span>
+                <span class="language-switcher-btn-name">English</span>
+                <span class="language-switcher-btn-code">(EN)</span>
+              </div>
+            </div>
+            <span class="language-switcher-btn-arrow">▼</span>
+          </button>
+
+          <div class="language-switcher-menu" id="languageSwitcherMenu">
+            <div class="language-switcher-item selected" data-lang="en">
+              <span class="language-switcher-item-flag">🇬🇧</span>
+              <div class="language-switcher-item-text">
+                <span class="language-switcher-item-name">English</span>
+                <span class="language-switcher-item-code">EN</span>
+              </div>
+            </div>
+            <div class="language-switcher-item" data-lang="th">
+              <span class="language-switcher-item-flag">🇹🇭</span>
+              <div class="language-switcher-item-text">
+                <span class="language-switcher-item-name">ไทย</span>
+                <span class="language-switcher-item-code">TH</span>
+              </div>
+            </div>
+            <div class="language-switcher-item" data-lang="lo">
+              <span class="language-switcher-item-flag">🇱🇦</span>
+              <div class="language-switcher-item-text">
+                <span class="language-switcher-item-name">ລາວ</span>
+                <span class="language-switcher-item-code">LA</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openCardModal()" data-i18n="admin_new_card_btn">+ New Gift Card Type</button>
+      </div>
+    </div>
+
+    <div class="admin-content">
+
+      <!-- Cards list -->
+      <div class="admin-card fade-in">
+        <div class="admin-card-header">
+          <h3 data-i18n="admin_gift_card_types">Gift Card Types</h3>
+          <input type="search" class="form-control" id="card-search" placeholder="Search cards…" data-i18n-ph="admin_search_cards_ph" style="max-width:220px;" oninput="filterCards()" />
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="orders-table">
+            <thead>
+              <tr><th data-i18n="admin_th_name">Name</th><th data-i18n="admin_th_category">Category</th><th data-i18n="admin_th_value">Value</th><th data-i18n="admin_th_price">Price</th><th data-i18n="admin_th_available">Available</th><th data-i18n="admin_th_status">Status</th><th data-i18n="admin_th_actions">Actions</th></tr>
+            </thead>
+            <tbody id="cards-tbody">
+              <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--gray-400);" data-i18n="admin_loading">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Code viewer panel -->
+      <div class="admin-card fade-in-2" id="codes-panel" style="display:none;">
+        <div class="admin-card-header">
+          <h3 id="codes-panel-title" data-i18n="admin_codes">Codes</h3>
+          <button class="btn btn-primary btn-sm" onclick="openCodesModal()" data-i18n="admin_add_codes">+ Add Codes</button>
+        </div>
+        <div id="codes-list" style="max-height:320px;overflow-y:auto;"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── New Card Modal ─────────────────────────────────────── -->
+<div class="modal-overlay" id="card-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="card-modal-title" data-i18n="admin_new_card_title">New Gift Card Type</h3>
+      <button class="modal-close" onclick="closeCardModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label" data-i18n="admin_card_name_label">Card Name *</label>
+        <input type="text" class="form-control" id="cm-name" placeholder="e.g. Steam Gift Card $10" data-i18n-ph="admin_card_name_ph" />
+        <div class="form-error" id="cm-name-err"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+        <div class="form-group">
+          <label class="form-label" data-i18n="admin_denomination_label">Denomination *</label>
+          <input type="number" class="form-control" id="cm-denom" placeholder="10.00" min="0" step="0.01" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="admin_currency_label">Currency *</label>
+          <select class="form-control" id="cm-currency">
+            <option value="USD">USD ($)</option>
+            <option value="LAK">LAK (₭) — Kip</option>
+            <option value="THB">THB (฿) — Baht</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="admin_selling_price_label">Selling Price *</label>
+          <input type="number" class="form-control" id="cm-price" placeholder="10.50" min="0" step="0.01" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="admin_category_label">Category</label>
+        <select class="form-control" id="cm-cat">
+          <option value="" data-i18n="admin_cat_placeholder">— Select a category —</option>
+          <option value="Gaming" data-i18n="admin_cat_gaming">🎮 Gaming</option>
+          <option value="Streaming" data-i18n="admin_cat_streaming">🎬 Streaming</option>
+          <option value="Shopping" data-i18n="admin_cat_shopping">🛍️ Shopping</option>
+          <option value="Mobile" data-i18n="admin_cat_mobile">📱 Mobile</option>
+          <option value="Food" data-i18n="admin_cat_food">🍔 Food &amp; Dining</option>
+          <option value="Travel" data-i18n="admin_cat_travel">✈️ Travel</option>
+          <option value="Music" data-i18n="admin_cat_music">🎵 Music</option>
+          <option value="Other" data-i18n="admin_cat_other">✨ Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="admin_description_label">Description</label>
+        <textarea class="form-control" id="cm-desc" rows="2" placeholder="Short description…" data-i18n-ph="admin_description_ph"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="admin_card_image_label">Card Image</label>
+        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
+          <label class="btn btn-outline btn-sm" style="cursor:pointer;margin:0;">
+            <span data-i18n="admin_choose_photo">📷 Choose Photo</span>
+            <input type="file" id="cm-img-file" accept="image/*" style="display:none;" onchange="uploadCardImage(this)" />
+          </label>
+          <span id="cm-img-status" style="font-size:.78rem;color:var(--gray-400);" data-i18n="admin_no_file">No file chosen</span>
+          <button type="button" class="btn btn-ghost btn-sm" id="cm-img-clear" onclick="clearCardImage()" style="display:none;" data-i18n="admin_remove">Remove</button>
+        </div>
+        <div id="cm-img-preview" style="margin-top:.6rem;"></div>
+        <input type="hidden" id="cm-img" />
+      </div>
+      <div class="form-group" id="cm-status-group" style="display:none;">
+        <label class="form-label" data-i18n="admin_active_label">Active</label>
+        <select class="form-control" id="cm-active"><option value="1" data-i18n="admin_yes">Yes</option><option value="0" data-i18n="admin_no">No</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeCardModal()" data-i18n="admin_cancel">Cancel</button>
+      <button class="btn btn-primary" id="card-modal-btn" onclick="saveCard()" data-i18n="admin_create_card">Create Card</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add Codes Modal ────────────────────────────────────── -->
+<div class="modal-overlay" id="codes-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add Gift Card Codes</h3>
+      <button class="modal-close" onclick="closeCodesModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:.85rem;color:var(--gray-400);margin-bottom:.75rem;">Adding codes to: <strong id="codes-target-name"></strong></p>
+      <div class="form-group">
+        <label class="form-label">Codes <small class="text-muted">(one per line)</small></label>
+        <textarea class="form-control" id="codes-input" rows="7"
+          placeholder="XXXX-YYYY-ZZZZ&#10;AAAA-BBBB-CCCC&#10;…"></textarea>
+        <div class="form-error" id="codes-err"></div>
+      </div>
+      <p style="font-size:.75rem;color:var(--gray-400);">Duplicates are automatically skipped.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeCodesModal()">Cancel</button>
+      <button class="btn btn-primary" id="codes-save-btn" onclick="saveCodes()">Add Codes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Edit Code Modal ──────────────────────────────────── -->
+<div class="modal-overlay" id="edit-code-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Edit Gift Card Code</h3>
+      <button class="modal-close" onclick="closeEditCodeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Code</label>
+        <input type="text" class="form-control" id="edit-code-input" placeholder="Enter code…" />
+        <div class="form-error" id="edit-code-err"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeEditCodeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditedCode()">Save Code</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete Code Confirmation Modal ──────────────────────────────────── -->
+<div class="modal-overlay" id="delete-code-modal">
+  <div class="modal modal-sm">
+    <div class="modal-header" style="background:linear-gradient(to right,var(--rose-100),var(--pink-100));">
+      <h3>Delete Gift Card Code?</h3>
+      <button class="modal-close" onclick="closeDeleteCodeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom:1rem;color:var(--gray-600);">Are you sure you want to delete this code?</p>
+      <div style="background:var(--rose-50);border-left:3px solid var(--rose-500);padding:.75rem;border-radius:6px;margin-bottom:1rem;">
+        <code style="word-break:break-all;color:var(--rose-700);font-weight:600;" id="delete-code-display"></code>
+      </div>
+      <p style="font-size:.85rem;color:var(--gray-400);">This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeDeleteCodeModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDeleteCode()">Delete Code</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete Card Confirmation Modal ──────────────────────────────────── -->
+<div class="modal-overlay" id="delete-card-modal">
+  <div class="modal modal-sm">
+    <div class="modal-header" style="background:linear-gradient(to right,var(--rose-100),var(--pink-100));">
+      <h3 data-i18n="admin_delete_card_title">Delete Gift Card?</h3>
+      <button class="modal-close" onclick="closeDeleteCardModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom:1rem;color:var(--gray-600);" data-i18n="admin_delete_card_confirm">Are you sure you want to delete this gift card?</p>
+      <div style="background:var(--rose-50);border-left:3px solid var(--rose-500);padding:.75rem;border-radius:6px;margin-bottom:1rem;">
+        <strong style="word-break:break-word;color:var(--rose-700);" id="delete-card-display"></strong>
+      </div>
+      <p style="font-size:.85rem;color:var(--gray-400);" data-i18n="admin_delete_card_note">All of its codes and order history will be deleted too. This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeDeleteCardModal()" data-i18n="admin_cancel">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDeleteCard()" data-i18n="admin_delete_card_btn">Delete Card</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="../js/api.js"></script>
+<script src="../js/translations.js"></script>
+<script src="../js/language-switcher.js"></script>
+<script>
+  if (!requireAuth(true)) throw new Error('Admin required');
+
+  let allCards = [];
+  let selectedCardId = null;
+  let editingCardId  = null;
+  let editingCodeData = { codeId: null, currentValue: null };
+  let deletingCodeData = { codeId: null, codeValue: null };
+  let deletingCardId = null;
+
+  async function loadCards() {
+    try {
+      allCards = await api.get('/admin/stock');
+      renderCards(allCards);
+    } catch { showToast('Failed to load cards.', 'error'); }
+  }
+
+  function renderCards(list) {
+    const tbody = document.getElementById('cards-tbody');
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--gray-400);">${t('admin_no_cards_created')}</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = list.map(c => `
+      <tr class="fade-in">
+        <td>
+          <div style="display:flex;align-items:center;gap:.6rem;">
+            ${c.image_url ? `<img src="${escAttr(c.image_url)}" alt="" style="width:36px;height:36px;border-radius:6px;object-fit:cover;border:1px solid var(--rose-100);" onerror="this.style.display='none'" />` : ''}
+            <strong>${escHtml(c.name)}</strong>
+          </div>
+        </td>
+        <td><span style="font-size:.75rem;background:var(--rose-100);color:var(--rose-600);padding:.15rem .5rem;border-radius:6px;">${escHtml(c.category||'—')}</span></td>
+        <td>${fmtPrice(c.denomination, c.currency)}</td>
+        <td>${fmtPrice(c.price, c.currency)}</td>
+        <td><strong style="color:${c.available>0?'#059669':'var(--rose-500)'};">${c.available||0}</strong></td>
+        <td><span class="status-badge ${c.is_active?'delivered':'cancelled'}">${c.is_active?t('admin_active'):t('admin_inactive')}</span></td>
+        <td>
+          <div style="display:flex;gap:.35rem;flex-wrap:wrap;">
+            <button class="btn btn-outline btn-sm" onclick="viewCodes(${c.id},'${escHtml(c.name)}')">${t('admin_view_codes')}</button>
+            <button class="btn btn-ghost btn-sm" onclick="editCard(${c.id})">${t('admin_edit')}</button>
+            <button class="btn btn-outline btn-sm" style="color:var(--rose-600);border-color:var(--rose-300);" onclick="deleteCard(${c.id})">🗑️ ${t('admin_delete')}</button>
+          </div>
+        </td>
+      </tr>`).join('');
+  }
+
+  function filterCards() {
+    const q = document.getElementById('card-search').value.toLowerCase();
+    renderCards(allCards.filter(c => c.name.toLowerCase().includes(q) || (c.category||'').toLowerCase().includes(q)));
+  }
+
+  // ── Card Modal ────────────────────────────────────────────
+  function openCardModal(id) {
+    editingCardId = id || null;
+    document.getElementById('card-modal-title').textContent = id ? t('admin_edit_card_title') : t('admin_new_card_title');
+    document.getElementById('card-modal-btn').textContent   = id ? t('admin_save_changes') : t('admin_create_card');
+    document.getElementById('cm-status-group').style.display = id ? '' : 'none';
+
+    // Reset image picker state
+    document.getElementById('cm-img-file').value = '';
+    document.getElementById('cm-img-preview').innerHTML = '';
+    document.getElementById('cm-img-status').textContent = t('admin_no_file');
+    document.getElementById('cm-img-clear').style.display = 'none';
+
+    if (id) {
+      const c = allCards.find(x => x.id === id);
+      document.getElementById('cm-name').value     = c.name;
+      document.getElementById('cm-denom').value    = c.denomination;
+      document.getElementById('cm-price').value    = c.price;
+      document.getElementById('cm-currency').value = c.currency || 'USD';
+      setCategoryValue(c.category || '');
+      document.getElementById('cm-desc').value     = c.description || '';
+      document.getElementById('cm-img').value      = c.image_url || '';
+      document.getElementById('cm-active').value   = c.is_active ? '1' : '0';
+      if (c.image_url) {
+        renderImagePreview(c.image_url);
+        document.getElementById('cm-img-status').textContent = t('admin_current_image');
+      }
+    } else {
+      document.getElementById('cm-name').value     = '';
+      document.getElementById('cm-denom').value    = '';
+      document.getElementById('cm-price').value    = '';
+      document.getElementById('cm-currency').value = 'USD';
+      document.getElementById('cm-cat').value      = '';
+      document.getElementById('cm-desc').value     = '';
+      document.getElementById('cm-img').value      = '';
+    }
+    document.getElementById('cm-name-err').textContent = '';
+    document.getElementById('card-modal').classList.add('open');
+  }
+
+  function closeCardModal() { document.getElementById('card-modal').classList.remove('open'); editingCardId = null; }
+
+  function editCard(id) { openCardModal(id); }
+
+  /** Set the category dropdown; if the value isn't in the list, fall back to "Other". */
+  function setCategoryValue(value) {
+    const sel = document.getElementById('cm-cat');
+    const exists = Array.from(sel.options).some(o => o.value === value);
+    sel.value = exists ? value : (value ? 'Other' : '');
+  }
+
+  // ── Image upload ──────────────────────────────────────────
+  async function uploadCardImage(input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    if (file.size > 15 * 1024 * 1024) {
+      showToast('Image too large (max 15 MB).', 'error');
+      input.value = '';
+      return;
+    }
+    const status = document.getElementById('cm-img-status');
+    status.textContent = 'Uploading…';
+    const fd = new FormData();
+    fd.append('image', file);
+    try {
+      const { url } = await api.upload('/cards/upload-image', fd);
+      document.getElementById('cm-img').value = url;
+      status.textContent = file.name;
+      document.getElementById('cm-img-clear').style.display = '';
+      renderImagePreview(url);
+      showToast('Image uploaded.', 'success');
+    } catch (e) {
+      status.textContent = 'Upload failed';
+      showToast(e.message || 'Upload failed.', 'error');
+    }
+  }
+
+  function clearCardImage() {
+    document.getElementById('cm-img-file').value = '';
+    document.getElementById('cm-img').value = '';
+    document.getElementById('cm-img-preview').innerHTML = '';
+    document.getElementById('cm-img-status').textContent = t('admin_no_file');
+    document.getElementById('cm-img-clear').style.display = 'none';
+  }
+
+  function renderImagePreview(url) {
+    document.getElementById('cm-img-preview').innerHTML =
+      `<img src="${escAttr(url)}" alt="preview"
+            style="max-width:180px;max-height:120px;border-radius:10px;border:1px solid var(--rose-100);box-shadow:0 4px 14px rgba(244,114,182,.15);"
+            onerror="this.style.display='none'" />`;
+  }
+
+  async function saveCard() {
+    const name     = document.getElementById('cm-name').value.trim();
+    const denom    = parseFloat(document.getElementById('cm-denom').value);
+    const price    = parseFloat(document.getElementById('cm-price').value);
+    const currency = document.getElementById('cm-currency').value || 'USD';
+    document.getElementById('cm-name-err').textContent = '';
+    if (!name) { document.getElementById('cm-name-err').textContent = 'Name is required.'; return; }
+    if (isNaN(denom) || isNaN(price)) { showToast('Enter valid denomination and price.', 'error'); return; }
+
+    const body = {
+      name, denomination: denom, price, currency,
+      category:    document.getElementById('cm-cat').value         || undefined,
+      description: document.getElementById('cm-desc').value.trim() || undefined,
+      image_url:   document.getElementById('cm-img').value.trim()  || undefined,
+    };
+    if (editingCardId) body.is_active = parseInt(document.getElementById('cm-active').value);
+
+    const btn = document.getElementById('card-modal-btn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      if (editingCardId) { await api.put(`/cards/${editingCardId}`, body); showToast('Card updated.', 'success'); }
+      else               { await api.post('/cards', body);                  showToast('Card created!', 'success'); }
+      closeCardModal();
+      await loadCards();
+    } catch (e) { showToast(e.message || 'Save failed.', 'error'); }
+    finally { btn.disabled = false; btn.textContent = editingCardId ? t('admin_save_changes') : t('admin_create_card'); }
+  }
+
+  // ── Codes panel ───────────────────────────────────────────
+  async function viewCodes(cardId, cardName) {
+    selectedCardId = cardId;
+    document.getElementById('codes-panel').style.display = '';
+    document.getElementById('codes-panel-title').textContent = `Codes — ${cardName}`;
+    document.getElementById('codes-list').innerHTML = '<div style="padding:.5rem;color:var(--gray-400);font-size:.85rem;">Loading…</div>';
+    document.getElementById('codes-target-name').textContent = cardName;
+    try {
+      const codes = await api.get(`/cards/${cardId}/codes`);
+      document.getElementById('codes-list').innerHTML = codes.length
+        ? `<table class="orders-table" style="font-size:.82rem;">
+            <thead><tr><th>Code</th><th>Status</th><th>Added</th><th>Actions</th></tr></thead>
+            <tbody>${codes.map(c=>`
+              <tr data-code-id="${c.id}">
+                <td><code class="code-cell" style="background:var(--rose-50);padding:.15rem .4rem;border-radius:4px;font-size:.8rem;">${escHtml(c.code)}</code></td>
+                <td><span class="status-badge ${c.status==='available'?'delivered':c.status==='used'?'cancelled':'pending'}">${c.status}</span></td>
+                <td style="color:var(--gray-400);">${new Date(c.created_at).toLocaleDateString()}</td>
+                <td>
+                  ${c.status === 'used'
+                    ? '<span style="color:var(--gray-400);font-size:.75rem;">Delivered — locked</span>'
+                    : `<div style="display:flex;gap:.3rem;flex-wrap:wrap;">
+                         <button class="btn btn-ghost btn-sm" onclick="editCode(${c.id}, '${escAttr(c.code)}')">✏️ Edit</button>
+                         <button class="btn btn-outline btn-sm" style="color:var(--rose-600);border-color:var(--rose-300);" onclick="deleteCode(${c.id}, '${escAttr(c.code)}')">🗑️ Delete</button>
+                       </div>`}
+                </td>
+              </tr>`).join('')}
+            </tbody>
+           </table>`
+        : '<p style="padding:1rem;color:var(--gray-400);text-align:center;">No codes added yet.</p>';
+    } catch { document.getElementById('codes-list').innerHTML = '<p style="padding:1rem;color:var(--rose-500);">Failed to load codes.</p>'; }
+    document.getElementById('codes-panel').scrollIntoView({ behavior:'smooth' });
+  }
+
+  // ── Edit / Delete a single code ───────────────────────────
+  function editCode(codeId, currentValue) {
+    if (!selectedCardId) return;
+    editingCodeData = { codeId, currentValue };
+    document.getElementById('edit-code-input').value = currentValue;
+    document.getElementById('edit-code-err').textContent = '';
+    document.getElementById('edit-code-modal').classList.add('open');
+    document.getElementById('edit-code-input').focus();
+  }
+
+  function closeEditCodeModal() {
+    document.getElementById('edit-code-modal').classList.remove('open');
+    editingCodeData = { codeId: null, currentValue: null };
+  }
+
+  async function saveEditedCode() {
+    const trimmed = document.getElementById('edit-code-input').value.trim();
+    document.getElementById('edit-code-err').textContent = '';
+    if (!trimmed) {
+      document.getElementById('edit-code-err').textContent = 'Code cannot be empty.';
+      return;
+    }
+    if (trimmed === editingCodeData.currentValue) {
+      closeEditCodeModal();
+      return;
+    }
+    try {
+      await api.put(`/cards/${selectedCardId}/codes/${editingCodeData.codeId}`, { code: trimmed });
+      showToast('Code updated.', 'success');
+      closeEditCodeModal();
+      const card = allCards.find(c => c.id === selectedCardId);
+      if (card) viewCodes(selectedCardId, card.name);
+    } catch (e) {
+      showToast(e.message || 'Update failed.', 'error');
+    }
+  }
+
+  function deleteCode(codeId, codeValue) {
+    if (!selectedCardId) return;
+    deletingCodeData = { codeId, codeValue };
+    document.getElementById('delete-code-display').textContent = codeValue;
+    document.getElementById('delete-code-modal').classList.add('open');
+  }
+
+  function closeDeleteCodeModal() {
+    document.getElementById('delete-code-modal').classList.remove('open');
+    deletingCodeData = { codeId: null, codeValue: null };
+  }
+
+  async function confirmDeleteCode() {
+    try {
+      await api.delete(`/cards/${selectedCardId}/codes/${deletingCodeData.codeId}`);
+      showToast('Code deleted.', 'success');
+      closeDeleteCodeModal();
+      await loadCards();
+      const card = allCards.find(c => c.id === selectedCardId);
+      if (card) viewCodes(selectedCardId, card.name);
+    } catch (e) {
+      showToast(e.message || 'Delete failed.', 'error');
+    }
+  }
+
+  // ── Delete a card ─────────────────────────────────────────
+  function deleteCard(id) {
+    const c = allCards.find(x => x.id === id);
+    if (!c) return;
+    deletingCardId = id;
+    document.getElementById('delete-card-display').textContent = c.name;
+    document.getElementById('delete-card-modal').classList.add('open');
+  }
+
+  function closeDeleteCardModal() {
+    document.getElementById('delete-card-modal').classList.remove('open');
+    deletingCardId = null;
+  }
+
+  async function confirmDeleteCard() {
+    if (!deletingCardId) return;
+    try {
+      await api.delete(`/cards/${deletingCardId}`);
+      showToast('Card deleted.', 'success');
+      if (selectedCardId === deletingCardId) {
+        selectedCardId = null;
+        document.getElementById('codes-panel').style.display = 'none';
+      }
+      closeDeleteCardModal();
+      await loadCards();
+    } catch (e) {
+      showToast(e.message || 'Delete failed.', 'error');
+    }
+  }
+
+  // ── Add Codes Modal ───────────────────────────────────────
+  function openCodesModal() {
+    if (!selectedCardId) return;
+    document.getElementById('codes-input').value = '';
+    document.getElementById('codes-err').textContent = '';
+    document.getElementById('codes-modal').classList.add('open');
+  }
+  function closeCodesModal() { document.getElementById('codes-modal').classList.remove('open'); }
+
+  async function saveCodes() {
+    const raw = document.getElementById('codes-input').value;
+    const codes = raw.split('\n').map(c => c.trim()).filter(Boolean);
+    document.getElementById('codes-err').textContent = '';
+    if (!codes.length) { document.getElementById('codes-err').textContent = 'Enter at least one code.'; return; }
+
+    const btn = document.getElementById('codes-save-btn');
+    btn.disabled = true; btn.textContent = 'Adding…';
+    try {
+      await api.post(`/cards/${selectedCardId}/codes`, { codes });
+      showToast(`${codes.length} code(s) added!`, 'success');
+      closeCodesModal();
+      await loadCards();
+      const card = allCards.find(c => c.id === selectedCardId);
+      if (card) viewCodes(selectedCardId, card.name);
+    } catch (e) { showToast(e.message || 'Failed to add codes.', 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Add Codes'; }
+  }
+
+  function escHtml(str) { return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function escAttr(str) { return (str||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+  function logout() { clearSession(); window.location.href = '../login.html'; }
+
+  // ── Modal event listeners ──────────────────────────────────
+  document.getElementById('card-modal').addEventListener('click', e => { if (e.target===e.currentTarget) closeCardModal(); });
+  document.getElementById('codes-modal').addEventListener('click', e => { if (e.target===e.currentTarget) closeCodesModal(); });
+  document.getElementById('edit-code-modal').addEventListener('click', e => { if (e.target===e.currentTarget) closeEditCodeModal(); });
+  document.getElementById('delete-code-modal').addEventListener('click', e => { if (e.target===e.currentTarget) closeDeleteCodeModal(); });
+  document.getElementById('delete-card-modal').addEventListener('click', e => { if (e.target===e.currentTarget) closeDeleteCardModal(); });
+  
+  document.addEventListener('keydown', e => {
+    if (e.key==='Escape') {
+      closeCardModal();
+      closeCodesModal();
+      closeEditCodeModal();
+      closeDeleteCodeModal();
+      closeDeleteCardModal();
+    }
+    if (e.key==='Enter' && document.getElementById('edit-code-modal').classList.contains('open')) {
+      e.preventDefault();
+      saveEditedCode();
+    }
+  });
+
+  loadCards();
+  window.addEventListener('languageChanged', () => {
+    renderCards(allCards);
+    if (selectedCardId) {
+      const card = allCards.find(c => c.id === selectedCardId);
+      if (card) viewCodes(selectedCardId, card.name);
+    }
+    // Refresh dynamically-set text in the open Edit/New Card modal
+    if (document.getElementById('card-modal').classList.contains('open')) {
+      document.getElementById('card-modal-title').textContent = editingCardId ? t('admin_edit_card_title') : t('admin_new_card_title');
+      document.getElementById('card-modal-btn').textContent   = editingCardId ? t('admin_save_changes') : t('admin_create_card');
+      const statusEl = document.getElementById('cm-img-status');
+      const hasImage = !!document.getElementById('cm-img').value;
+      if (hasImage && statusEl.textContent !== document.getElementById('cm-img-file').files?.[0]?.name) {
+        statusEl.textContent = t('admin_current_image');
+      } else if (!hasImage) {
+        statusEl.textContent = t('admin_no_file');
+      }
+    }
+  });
+</script>
+</body>
+</html>
