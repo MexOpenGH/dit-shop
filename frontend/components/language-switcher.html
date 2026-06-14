@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Switcher Component</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .demo-container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .demo-container h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 24px;
+        }
+
+        .demo-container p {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        /* Language Switcher Styles */
+        .language-switcher {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .language-switcher-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .language-switcher-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .language-switcher-btn:active {
+            transform: translateY(0);
+        }
+
+        .language-switcher-btn-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .language-switcher-btn-text {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .language-switcher-btn-flag {
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        .language-switcher-btn-code {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-left: 4px;
+        }
+
+        .language-switcher-btn-arrow {
+            font-size: 18px;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .language-switcher-btn.active .language-switcher-btn-arrow {
+            transform: rotate(180deg);
+        }
+
+        /* Dropdown Menu Styles */
+        .language-switcher-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            margin-top: 8px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .language-switcher-menu.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .language-switcher-item {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            color: #333;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .language-switcher-item:last-child {
+            border-bottom: none;
+        }
+
+        .language-switcher-item:hover {
+            background-color: #f8f9fa;
+            padding-left: 20px;
+        }
+
+        .language-switcher-item.selected {
+            background-color: #f0f0f0;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .language-switcher-item.selected::before {
+            content: '✓';
+            color: #667eea;
+            font-weight: bold;
+            margin-left: auto;
+        }
+
+        .language-switcher-item-flag {
+            font-size: 24px;
+            line-height: 1;
+        }
+
+        .language-switcher-item-text {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .language-switcher-item-name {
+            font-weight: 500;
+        }
+
+        .language-switcher-item-code {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* Status Display */
+        .current-language-display {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .current-language-display h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .current-language-display p {
+            margin: 0;
+            color: #667eea;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .demo-container {
+                padding: 20px;
+            }
+
+            .language-switcher-btn {
+                padding: 10px 14px;
+                font-size: 14px;
+            }
+
+            .language-switcher-item {
+                padding: 10px 14px;
+            }
+
+            .language-switcher-item:hover {
+                padding-left: 16px;
+            }
+
+            .language-switcher-btn-flag {
+                font-size: 18px;
+            }
+
+            .language-switcher-item-flag {
+                font-size: 20px;
+            }
+        }
+
+        /* Accessibility */
+        .language-switcher-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .language-switcher-item:focus {
+            outline: none;
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>🌐 Language Switcher</h1>
+        <p>Select your preferred language from the dropdown below</p>
+
+        <div class="language-switcher">
+            <button class="language-switcher-btn" id="languageSwitcherBtn" aria-label="Select language" aria-haspopup="true" aria-expanded="false">
+                <div class="language-switcher-btn-content">
+                    <div class="language-switcher-btn-text">
+                        <span class="language-switcher-btn-flag">🇬🇧</span>
+                        <span>English</span>
+                        <span class="language-switcher-btn-code">(EN)</span>
+                    </div>
+                </div>
+                <span class="language-switcher-btn-arrow">▼</span>
+            </button>
+
+            <div class="language-switcher-menu" id="languageSwitcherMenu">
+                <div class="language-switcher-item selected" data-lang="en">
+                    <span class="language-switcher-item-flag">🇬🇧</span>
+                    <div class="language-switcher-item-text">
+                        <span class="language-switcher-item-name">English</span>
+                        <span class="language-switcher-item-code">EN</span>
+                    </div>
+                </div>
+                <div class="language-switcher-item" data-lang="th">
+                    <span class="language-switcher-item-flag">🇹🇭</span>
+                    <div class="language-switcher-item-text">
+                        <span class="language-switcher-item-name">ไทย</span>
+                        <span class="language-switcher-item-code">TH</span>
+                    </div>
+                </div>
+                <div class="language-switcher-item" data-lang="lo">
+                    <span class="language-switcher-item-flag">🇱🇦</span>
+                    <div class="language-switcher-item-text">
+                        <span class="language-switcher-item-name">ລາວ</span>
+                        <span class="language-switcher-item-code">LA</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="current-language-display">
+            <h3>Current Language</h3>
+            <p id="currentLanguageDisplay">🇬🇧 English (EN)</p>
+        </div>
+    </div>
+
+    <script>
+        // Language Switcher Functionality
+        class LanguageSwitcher {
+            constructor() {
+                this.btn = document.getElementById('languageSwitcherBtn');
+                this.menu = document.getElementById('languageSwitcherMenu');
+                this.items = document.querySelectorAll('.language-switcher-item');
+                this.currentLanguageDisplay = document.getElementById('currentLanguageDisplay');
+                
+                // Get saved language from localStorage or default to 'en'
+                this.currentLanguage = localStorage.getItem('selectedLanguage') || 'en';
+                
+                this.init();
+            }
+
+            init() {
+                // Toggle dropdown on button click
+                this.btn.addEventListener('click', () => this.toggleMenu());
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.language-switcher')) {
+                        this.closeMenu();
+                    }
+                });
+
+                // Handle language selection
+                this.items.forEach(item => {
+                    item.addEventListener('click', () => this.selectLanguage(item));
+                    item.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            this.selectLanguage(item);
+                        }
+                    });
+                });
+
+                // Keyboard navigation
+                this.btn.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        this.openMenu();
+                    }
+                });
+
+                // Set initial display
+                this.updateDisplay();
+                this.setSelectedItem();
+            }
+
+            toggleMenu() {
+                if (this.menu.classList.contains('active')) {
+                    this.closeMenu();
+                } else {
+                    this.openMenu();
+                }
+            }
+
+            openMenu() {
+                this.menu.classList.add('active');
+                this.btn.classList.add('active');
+                this.btn.setAttribute('aria-expanded', 'true');
+            }
+
+            closeMenu() {
+                this.menu.classList.remove('active');
+                this.btn.classList.remove('active');
+                this.btn.setAttribute('aria-expanded', 'false');
+            }
+
+            selectLanguage(item) {
+                const lang = item.getAttribute('data-lang');
+                this.currentLanguage = lang;
+
+                // Save to localStorage
+                localStorage.setItem('selectedLanguage', lang);
+
+                // Update UI
+                this.setSelectedItem();
+                this.updateDisplay();
+                this.closeMenu();
+
+                // Trigger custom event for language change
+                window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: lang } }));
+
+                // Log for demo purposes
+                console.log(`Language changed to: ${lang}`);
+            }
+
+            setSelectedItem() {
+                this.items.forEach(item => {
+                    item.classList.remove('selected');
+                });
+                const selectedItem = document.querySelector(`[data-lang="${this.currentLanguage}"]`);
+                if (selectedItem) {
+                    selectedItem.classList.add('selected');
+                }
+            }
+
+            updateDisplay() {
+                const selectedItem = document.querySelector(`[data-lang="${this.currentLanguage}"]`);
+                if (selectedItem) {
+                    const flag = selectedItem.querySelector('.language-switcher-item-flag').textContent;
+                    const name = selectedItem.querySelector('.language-switcher-item-name').textContent;
+                    const code = selectedItem.querySelector('.language-switcher-item-code').textContent;
+
+                    // Update button
+                    const btnContent = this.btn.querySelector('.language-switcher-btn-text');
+                    btnContent.innerHTML = `
+                        <span class="language-switcher-btn-flag">${flag}</span>
+                        <span>${name}</span>
+                        <span class="language-switcher-btn-code">(${code})</span>
+                    `;
+
+                    // Update display
+                    this.currentLanguageDisplay.textContent = `${flag} ${name} (${code})`;
+                }
+            }
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            new LanguageSwitcher();
+        });
+
+        // Listen for language changes (example usage)
+        window.addEventListener('languageChanged', (e) => {
+            console.log('Language switched to:', e.detail.language);
+            // You can use this event to update your application language
+        });
+    </script>
+</body>
+</html>
