@@ -1,14 +1,24 @@
 {
-  "name": "dit-shop",
+  "name": "ditshop-backend",
   "version": "1.0.0",
-  "description": "Dit Shop — gift card store (Express + SQLite)",
-  "private": true,
+  "description": "Dit Shop Gift Card Store - Backend API",
+  "main": "server.js",
   "scripts": {
-    "install:all": "cd backend && npm install",
-    "build": "cd backend && npm install",
-    "start": "cd backend && node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
-  "engines": {
-    "node": ">=18"
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.3.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.3.1",
+    "express-validator": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.3"
   }
 }
