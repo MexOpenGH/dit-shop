@@ -1,0 +1,111 @@
+/* ============================================================
+   Dit Shop — Animations & Transitions
+   ============================================================ */
+
+/* ── Page Fade ─────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in   { animation: fadeIn .5s ease forwards; }
+.fade-in-2 { animation: fadeIn .5s .1s ease both; }
+.fade-in-3 { animation: fadeIn .5s .2s ease both; }
+.fade-in-4 { animation: fadeIn .5s .3s ease both; }
+
+/* ── Float ─────────────────────────────────────────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+.float { animation: float 3.5s ease-in-out infinite; }
+
+/* ── Pulse Rose ────────────────────────────────────────────── */
+@keyframes pulseRose {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(244,63,94,.35); }
+  50%       { box-shadow: 0 0 0 10px rgba(244,63,94,0); }
+}
+.pulse { animation: pulseRose 2s ease infinite; }
+
+/* ── Shimmer Skeleton ──────────────────────────────────────── */
+@keyframes shimmer {
+  from { background-position: -400px 0; }
+  to   { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg,
+    var(--gray-100) 25%,
+    var(--gray-50)  50%,
+    var(--gray-100) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 8px;
+}
+.skeleton-card {
+  height: 280px; border-radius: var(--radius-lg);
+}
+.skeleton-text { height: 14px; margin-bottom: 8px; }
+.skeleton-text.w-60 { width: 60%; }
+.skeleton-text.w-80 { width: 80%; }
+
+/* ── Card hover glow ───────────────────────────────────────── */
+.gift-card::after {
+  content: '';
+  position: absolute; inset: 0; border-radius: var(--radius-lg);
+  opacity: 0;
+  box-shadow: inset 0 0 0 2px var(--rose-300);
+  transition: opacity .25s ease;
+  pointer-events: none;
+}
+.gift-card { position: relative; }
+.gift-card:hover::after { opacity: 1; }
+
+/* ── Stagger children ──────────────────────────────────────── */
+.stagger-children > *:nth-child(1) { animation-delay: .05s; }
+.stagger-children > *:nth-child(2) { animation-delay: .10s; }
+.stagger-children > *:nth-child(3) { animation-delay: .15s; }
+.stagger-children > *:nth-child(4) { animation-delay: .20s; }
+.stagger-children > *:nth-child(5) { animation-delay: .25s; }
+.stagger-children > *:nth-child(6) { animation-delay: .30s; }
+.stagger-children > *:nth-child(7) { animation-delay: .35s; }
+.stagger-children > *:nth-child(8) { animation-delay: .40s; }
+
+/* ── Slide in from right (admin sidebar panels) ────────────── */
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.slide-right { animation: slideRight .35s ease forwards; }
+
+/* ── Bounce checkmark ──────────────────────────────────────── */
+@keyframes bounceIn {
+  0%   { transform: scale(0); opacity: 0; }
+  60%  { transform: scale(1.2); opacity: 1; }
+  80%  { transform: scale(.9); }
+  100% { transform: scale(1); }
+}
+.bounce-in { animation: bounceIn .5s cubic-bezier(.36,.07,.19,.97) forwards; }
+
+/* ── Rose Petals (hero decoration) ────────────────────────── */
+.petal {
+  position: absolute; border-radius: 50% 0 50% 0;
+  background: linear-gradient(135deg, rgba(251,113,133,.18), rgba(249,168,212,.25));
+  pointer-events: none;
+}
+@keyframes drift {
+  0%   { transform: rotate(0deg) translate(0,0); opacity: .7; }
+  50%  { opacity: .4; }
+  100% { transform: rotate(360deg) translate(30px,-30px); opacity: .7; }
+}
+
+/* ── Button ripple ─────────────────────────────────────────── */
+.btn { overflow: hidden; position: relative; }
+.ripple-effect {
+  position: absolute; border-radius: 50%;
+  background: rgba(255,255,255,.3);
+  transform: scale(0);
+  animation: ripple .55s linear;
+  pointer-events: none;
+}
+@keyframes ripple {
+  to { transform: scale(4); opacity: 0; }
+}
